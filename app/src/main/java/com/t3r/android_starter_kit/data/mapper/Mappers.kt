@@ -4,12 +4,14 @@ import com.t3r.android_starter_kit.data.remote.dto.auth.PermissionDto
 import com.t3r.android_starter_kit.data.remote.dto.auth.RoleDto
 import com.t3r.android_starter_kit.data.remote.dto.auth.RuleDto
 import com.t3r.android_starter_kit.data.remote.dto.auth.UserDto
+import com.t3r.android_starter_kit.data.remote.dto.auth.Enable2faResponseDto
 import com.t3r.android_starter_kit.data.remote.dto.files.FileDto
 import com.t3r.android_starter_kit.data.remote.dto.files.UploadUrlResponseDto
 import com.t3r.android_starter_kit.data.remote.dto.notifications.NotificationDto
 import com.t3r.android_starter_kit.domain.model.CaslRule
 import com.t3r.android_starter_kit.domain.model.FileInfo
 import com.t3r.android_starter_kit.domain.model.Notification
+import com.t3r.android_starter_kit.domain.model.TwoFactorSetup
 import com.t3r.android_starter_kit.domain.model.NotificationType
 import com.t3r.android_starter_kit.domain.model.Permission
 import com.t3r.android_starter_kit.domain.model.Role
@@ -57,6 +59,14 @@ fun RuleDto.toDomain(): CaslRule = CaslRule(
     subject = subject,
     conditions = conditions,
     inverted = inverted,
+)
+
+// -- 2FA mapping --
+
+fun Enable2faResponseDto.toDomain(): TwoFactorSetup = TwoFactorSetup(
+    qrCodeUrl = qrCodeUrl,
+    secret = secret,
+    recoveryCodes = recoveryCodes,
 )
 
 // -- Notification mapping --

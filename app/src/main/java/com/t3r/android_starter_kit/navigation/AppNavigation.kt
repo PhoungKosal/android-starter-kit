@@ -10,18 +10,24 @@ import com.t3r.android_starter_kit.presentation.auth.AuthViewModel
 import com.t3r.android_starter_kit.presentation.auth.ForgotPasswordScreen
 import com.t3r.android_starter_kit.presentation.auth.LoginScreen
 import com.t3r.android_starter_kit.presentation.auth.RegisterScreen
+import com.t3r.android_starter_kit.presentation.auth.ResetPasswordScreen
+import com.t3r.android_starter_kit.presentation.auth.ResetPasswordViewModel
 import com.t3r.android_starter_kit.presentation.auth.TwoFactorScreen
+import com.t3r.android_starter_kit.presentation.auth.VerifyEmailScreen
+import com.t3r.android_starter_kit.presentation.auth.VerifyEmailViewModel
 import com.t3r.android_starter_kit.presentation.home.HomeScreen
 import com.t3r.android_starter_kit.presentation.home.HomeViewModel
 import com.t3r.android_starter_kit.presentation.notifications.NotificationsScreen
 import com.t3r.android_starter_kit.presentation.notifications.NotificationsViewModel
 import com.t3r.android_starter_kit.presentation.profile.ProfileScreen
 import com.t3r.android_starter_kit.presentation.profile.ProfileViewModel
+import com.t3r.android_starter_kit.presentation.settings.SettingsScreen
+import com.t3r.android_starter_kit.presentation.settings.SettingsViewModel
+import com.t3r.android_starter_kit.presentation.settings.TwoFactorScreen as TwoFactorSettingsScreen
+import com.t3r.android_starter_kit.presentation.settings.TwoFactorViewModel
 
 @Composable
-fun AppNavigation(
-    isLoggedIn: Boolean,
-) {
+fun AppNavigation(isLoggedIn: Boolean) {
     val startRoute: NavKey = if (isLoggedIn) Route.Home else Route.Login
     val backStack = rememberNavBackStack(startRoute)
 
@@ -54,6 +60,9 @@ fun AppNavigation(
                         backStack.removeAll { true }
                         backStack.add(Route.Home)
                     },
+                    onNavigateToVerifyEmail = { email ->
+                        backStack.add(Route.VerifyEmail(email))
+                    },
                 )
             }
 
@@ -77,6 +86,26 @@ fun AppNavigation(
                 )
             }
 
+            entry<Route.VerifyEmail> {
+                val viewModel: VerifyEmailViewModel = hiltViewModel()
+                VerifyEmailScreen(
+                    viewModel = viewModel,
+                    onNavigateBack = { backStack.removeLastOrNull() },
+                )
+            }
+
+            entry<Route.ResetPassword> {
+                val viewModel: ResetPasswordViewModel = hiltViewModel()
+                ResetPasswordScreen(
+                    viewModel = viewModel,
+                    onNavigateBack = { backStack.removeLastOrNull() },
+                    onNavigateToLogin = {
+                        backStack.removeAll { true }
+                        backStack.add(Route.Login)
+                    },
+                )
+            }
+
             // -- Main App Flow --
 
             entry<Route.Home> {
@@ -85,6 +114,7 @@ fun AppNavigation(
                     viewModel = viewModel,
                     onNavigateToProfile = { backStack.add(Route.Profile) },
                     onNavigateToNotifications = { backStack.add(Route.Notifications) },
+                    onNavigateToSettings = { backStack.add(Route.Settings) },
                 )
             }
 
@@ -104,6 +134,29 @@ fun AppNavigation(
                 val viewModel: NotificationsViewModel = hiltViewModel()
                 NotificationsScreen(
                     viewModel = viewModel,
+                    onNavigateBack = { backStack.removeLastOrNull() },
+                )
+            }
+
+            // -- Settings --
+
+            entry<Route.Settings> {
+                val viewModel: SettingsViewModel = hiltViewModel()
+                SettingsScreen(
+                    viewModel = viewModel,
+                    onNavigateBack = { backStack.removeLastOrNull() },
+                    onNavigateToTwoFactor = {
+                        val twoFactorEnabled = viewModel.state.value.user?.twoFactorEnabled ?: false
+                        backStack.add(Route.TwoFactorSettings(twoFactorEnabled))
+                    },
+                )
+            }
+
+            entry<Route.TwoFactorSettings> { route ->
+                val viewModel: TwoFactorViewModel = hiltViewModel()
+                TwoFactorSettingsScreen(
+                    viewModel = viewModel,
+                    twoFactorEnabled = route.twoFactorEnabled,
                     onNavigateBack = { backStack.removeLastOrNull() },
                 )
             }

@@ -30,3 +30,10 @@ sealed interface RegisterResult {
         val message: String,
     ) : RegisterResult
 }
+
+/** 2FA setup response with QR code and recovery codes. */
+data class TwoFactorSetup(
+    val qrCodeUrl: String,
+    val secret: String,
+    val recoveryCodes: List<String>,
+)

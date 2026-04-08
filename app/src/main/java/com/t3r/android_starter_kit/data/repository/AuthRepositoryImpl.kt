@@ -6,16 +6,40 @@ import com.t3r.android_starter_kit.core.result.map
 import com.t3r.android_starter_kit.data.local.DataStoreManager
 import com.t3r.android_starter_kit.data.mapper.toDomain
 import com.t3r.android_starter_kit.data.remote.api.AuthApi
+import com.t3r.android_starter_kit.data.remote.api.NotificationsApi
 import com.t3r.android_starter_kit.data.remote.dto.auth.*
+import com.t3r.android_starter_kit.data.remote.dto.notifications.RegisterDeviceRequestDto
 import com.t3r.android_starter_kit.domain.model.*
 import com.t3r.android_starter_kit.domain.repository.AuthRepository
 import kotlinx.coroutines.flow.first
+import timber.log.Timber
 import javax.inject.Inject
 
 class AuthRepositoryImpl @Inject constructor(
     private val authApi: AuthApi,
+    private val notificationsApi: NotificationsApi,
     private val dataStore: DataStoreManager,
 ) : AuthRepository {
+
+    private suspend fun registerFcmDevice() {
+        val fcmToken = dataStore.fcmToken.first() ?: return
+        try {
+            notificationsApi.registerDevice(
+                RegisterDeviceRequestDto(token = fcmToken, platform = "android")
+            )
+        } catch (e: Exception) {
+            Timber.e(e, "Failed to register FCM device")
+        }
+    }
+
+    private suspend fun unregisterFcmDevice() {
+        val fcmToken = dataStore.fcmToken.first() ?: return
+        try {
+            notificationsApi.unregisterDevice(fcmToken)
+        } catch (e: Exception) {
+            Timber.e(e, "Failed to unregister FCM device")
+        }
+    }
 
     override suspend fun login(identifier: String, password: String): Result<LoginResult> =
         safeApiCall {
@@ -29,6 +53,7 @@ class AuthRepositoryImpl @Inject constructor(
                 val tokens = AuthTokens(response.accessToken!!, response.refreshToken!!)
                 dataStore.saveTokens(tokens.accessToken, tokens.refreshToken)
                 response.user?.let { dataStore.saveUserId(it.id) }
+                registerFcmDevice()
                 LoginResult.Authenticated(
                     tokens = tokens,
                     user = response.user!!.toDomain(),
@@ -50,6 +75,7 @@ class AuthRepositoryImpl @Inject constructor(
             val tokens = AuthTokens(response.accessToken, response.refreshToken!!)
             dataStore.saveTokens(tokens.accessToken, tokens.refreshToken)
             response.user?.let { dataStore.saveUserId(it.id) }
+            registerFcmDevice()
             RegisterResult.Authenticated(
                 tokens = tokens,
                 user = response.user!!.toDomain(),
@@ -70,6 +96,7 @@ class AuthRepositoryImpl @Inject constructor(
         val tokens = AuthTokens(response.accessToken!!, response.refreshToken!!)
         dataStore.saveTokens(tokens.accessToken, tokens.refreshToken)
         response.user?.let { dataStore.saveUserId(it.id) }
+        registerFcmDevice()
         LoginResult.Authenticated(
             tokens = tokens,
             user = response.user!!.toDomain(),
@@ -90,6 +117,7 @@ class AuthRepositoryImpl @Inject constructor(
 
     override suspend fun logout(): Result<Unit> {
         val refreshToken = dataStore.refreshToken.first()
+        unregisterFcmDevice()
         val result = safeApiCall {
             authApi.logout(LogoutRequestDto(refreshToken))
         }
@@ -166,6 +194,14 @@ class AuthRepositoryImpl @Inject constructor(
             dataStore.clearSession()
         }
     }
+
+    override suspend fun enable2fa(code: String): Result<TwoFactorSetup> = safeApiCall {
+        authApi.enable2fa(Enable2faRequestDto(code))
+    }.map { it.toDomain() }
+
+    override suspend fun disable2fa(password: String): Result<String> = safeApiCall {
+        authApi.disable2fa(Disable2faRequestDto(password))
+    }.map { it.message }
 
     override suspend fun isLoggedIn(): Boolean = dataStore.isLoggedIn.first()
 

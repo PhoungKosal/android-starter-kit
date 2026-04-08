@@ -44,6 +44,10 @@ interface AuthRepository {
 
     suspend fun deleteAccount(password: String): Result<Unit>
 
+    suspend fun enable2fa(code: String): Result<TwoFactorSetup>
+
+    suspend fun disable2fa(password: String): Result<String>
+
     suspend fun isLoggedIn(): Boolean
 
     suspend fun clearSession()

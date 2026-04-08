@@ -17,6 +17,7 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import retrofit2.Retrofit
 import javax.inject.Singleton
 
 @Module
@@ -27,8 +28,13 @@ object RepositoryModule {
     @Singleton
     fun provideAuthRepository(
         authApi: AuthApi,
+        @AuthenticatedClient retrofit: Retrofit,
         dataStoreManager: DataStoreManager,
-    ): AuthRepository = AuthRepositoryImpl(authApi, dataStoreManager)
+    ): AuthRepository = AuthRepositoryImpl(
+        authApi,
+        retrofit.create(NotificationsApi::class.java),
+        dataStoreManager,
+    )
 
     @Provides
     @Singleton

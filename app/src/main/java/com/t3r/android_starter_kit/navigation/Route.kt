@@ -1,13 +1,8 @@
 package com.t3r.android_starter_kit.navigation
 
-
 import androidx.navigation3.runtime.NavKey
 import kotlinx.serialization.Serializable
 
-/**
- * Type-safe navigation routes using kotlinx.serialization.
- * Each route is a data class/object representing a destination.
- */
 sealed interface Route : NavKey {
 
     // Auth routes
@@ -15,6 +10,8 @@ sealed interface Route : NavKey {
     @Serializable data object Register : Route
     @Serializable data object ForgotPassword : Route
     @Serializable data object TwoFactor : Route
+    @Serializable data class VerifyEmail(val email: String = "") : Route
+    @Serializable data class ResetPassword(val token: String = "") : Route
 
     // Main app routes
     @Serializable data object Home : Route
@@ -23,4 +20,5 @@ sealed interface Route : NavKey {
 
     // Settings
     @Serializable data object Settings : Route
+    @Serializable data class TwoFactorSettings(val twoFactorEnabled: Boolean = false) : Route
 }

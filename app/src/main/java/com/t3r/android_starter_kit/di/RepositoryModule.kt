@@ -17,6 +17,7 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import javax.inject.Singleton
 
@@ -48,6 +49,9 @@ object RepositoryModule {
 
     @Provides
     @Singleton
-    fun provideFilesRepository(filesApi: FilesApi): FilesRepository =
-        FilesRepositoryImpl(filesApi)
+    fun provideFilesRepository(
+        filesApi: FilesApi,
+        @PublicClient okHttpClient: OkHttpClient,
+    ): FilesRepository =
+        FilesRepositoryImpl(filesApi, okHttpClient)
 }

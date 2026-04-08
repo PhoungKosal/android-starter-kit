@@ -38,15 +38,17 @@ interface AuthRepository {
         phoneNumber: String? = null,
     ): Result<User>
 
-    suspend fun setAvatar(fileId: String): Result<User>
+    suspend fun setAvatar(fileId: String): Result<Unit>
 
     suspend fun deleteAvatar(): Result<Unit>
 
     suspend fun deleteAccount(password: String): Result<Unit>
 
-    suspend fun enable2fa(code: String): Result<TwoFactorSetup>
+    suspend fun setup2fa(): Result<TwoFactorSetup>
 
-    suspend fun disable2fa(password: String): Result<String>
+    suspend fun enable2fa(code: String): Result<List<String>>
+
+    suspend fun disable2fa(password: String, code: String): Result<String>
 
     suspend fun isLoggedIn(): Boolean
 

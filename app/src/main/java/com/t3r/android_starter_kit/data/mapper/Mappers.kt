@@ -5,6 +5,7 @@ import com.t3r.android_starter_kit.data.remote.dto.auth.RoleDto
 import com.t3r.android_starter_kit.data.remote.dto.auth.RuleDto
 import com.t3r.android_starter_kit.data.remote.dto.auth.UserDto
 import com.t3r.android_starter_kit.data.remote.dto.auth.Enable2faResponseDto
+import com.t3r.android_starter_kit.data.remote.dto.auth.Setup2faResponseDto
 import com.t3r.android_starter_kit.data.remote.dto.files.FileDto
 import com.t3r.android_starter_kit.data.remote.dto.files.UploadUrlResponseDto
 import com.t3r.android_starter_kit.data.remote.dto.notifications.NotificationDto
@@ -30,7 +31,7 @@ fun UserDto.toDomain(): User = User(
     firstName = profile?.firstName,
     lastName = profile?.lastName,
     phoneNumber = profile?.phoneNumber,
-    avatar = profile?.avatar,
+    avatar = avatarUrl ?: profile?.avatar,
     bio = profile?.bio,
     location = profile?.location,
     role = role?.toDomain(),
@@ -63,11 +64,12 @@ fun RuleDto.toDomain(): CaslRule = CaslRule(
 
 // -- 2FA mapping --
 
-fun Enable2faResponseDto.toDomain(): TwoFactorSetup = TwoFactorSetup(
-    qrCodeUrl = qrCodeUrl,
-    secret = secret,
-    recoveryCodes = recoveryCodes,
+fun Setup2faResponseDto.toDomain(): TwoFactorSetup = TwoFactorSetup(
+    qrCode = qrCode,
+    manualEntryKey = manualEntryKey,
 )
+
+fun Enable2faResponseDto.toDomain(): List<String> = recoveryCodes
 
 // -- Notification mapping --
 
@@ -97,5 +99,6 @@ fun FileDto.toDomain(): FileInfo = FileInfo(
 fun UploadUrlResponseDto.toDomain(): UploadUrl = UploadUrl(
     uploadToken = uploadToken,
     uploadUrl = uploadUrl,
-    expiresAt = expiresAt,
+    key = key,
+    expiresIn = expiresIn,
 )

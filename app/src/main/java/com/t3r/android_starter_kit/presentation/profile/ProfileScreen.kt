@@ -1,6 +1,10 @@
 package com.t3r.android_starter_kit.presentation.profile
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -13,6 +17,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.outlined.Email
 import androidx.compose.material.icons.outlined.Person
@@ -20,6 +25,7 @@ import androidx.compose.material.icons.outlined.Security
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -42,6 +48,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
@@ -58,6 +65,17 @@ fun ProfileScreen(
 ) {
     val state by viewModel.state.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
+    val context = LocalContext.current
+
+    LaunchedEffect(Unit) {
+        viewModel.contentResolver = context.contentResolver
+    }
+
+    val imagePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent(),
+    ) { uri ->
+        uri?.let { viewModel.onEvent(ProfileEvent.UploadAvatar(it)) }
+    }
 
     LaunchedEffect(state.loggedOut) {
         if (state.loggedOut) onLoggedOut()
@@ -165,31 +183,58 @@ fun ProfileScreen(
                                 .padding(24.dp),
                             horizontalAlignment = Alignment.CenterHorizontally,
                         ) {
-                            if (user.avatar != null) {
-                                AsyncImage(
-                                    model = user.avatar,
-                                    contentDescription = "Avatar",
-                                    modifier = Modifier
-                                        .size(96.dp)
-                                        .clip(CircleShape),
-                                    contentScale = ContentScale.Crop,
-                                )
-                            } else {
-                                Card(
-                                    modifier = Modifier.size(96.dp),
-                                    shape = CircleShape,
-                                ) {
-                                    Column(
+                            Box(
+                                contentAlignment = Alignment.Center,
+                                modifier = Modifier
+                                    .size(96.dp)
+                                    .clip(CircleShape)
+                                    .clickable(enabled = !state.isUploadingAvatar) {
+                                        imagePickerLauncher.launch("image/*")
+                                    },
+                            ) {
+                                if (user.avatar != null) {
+                                    AsyncImage(
+                                        model = user.avatar,
+                                        contentDescription = "Avatar",
                                         modifier = Modifier.fillMaxSize(),
-                                        horizontalAlignment = Alignment.CenterHorizontally,
-                                        verticalArrangement = Arrangement.Center,
+                                        contentScale = ContentScale.Crop,
+                                    )
+                                } else {
+                                    Card(
+                                        modifier = Modifier.fillMaxSize(),
+                                        shape = CircleShape,
                                     ) {
-                                        Text(
-                                            text = user.initials,
-                                            style = MaterialTheme.typography.headlineMedium,
-                                        )
+                                        Column(
+                                            modifier = Modifier.fillMaxSize(),
+                                            horizontalAlignment = Alignment.CenterHorizontally,
+                                            verticalArrangement = Arrangement.Center,
+                                        ) {
+                                            Text(
+                                                text = user.initials,
+                                                style = MaterialTheme.typography.headlineMedium,
+                                            )
+                                        }
                                     }
                                 }
+                                if (state.isUploadingAvatar) {
+                                    CircularProgressIndicator(
+                                        modifier = Modifier.size(48.dp),
+                                        strokeWidth = 3.dp,
+                                    )
+                                }
+                            }
+                            Spacer(modifier = Modifier.height(4.dp))
+                            TextButton(
+                                onClick = { imagePickerLauncher.launch("image/*") },
+                                enabled = !state.isUploadingAvatar,
+                            ) {
+                                Icon(
+                                    Icons.Default.CameraAlt,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(16.dp),
+                                )
+                                Spacer(modifier = Modifier.size(4.dp))
+                                Text("Change Photo", style = MaterialTheme.typography.labelSmall)
                             }
 
                             Spacer(modifier = Modifier.height(12.dp))

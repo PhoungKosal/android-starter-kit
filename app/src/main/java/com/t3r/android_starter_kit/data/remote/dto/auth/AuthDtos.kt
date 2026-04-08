@@ -59,6 +59,7 @@ data class Enable2faRequestDto(
 @Serializable
 data class Disable2faRequestDto(
     val password: String,
+    val code: String,
 )
 
 @Serializable
@@ -107,10 +108,15 @@ data class RefreshTokenResponseDto(
 )
 
 @Serializable
+data class Setup2faResponseDto(
+    val qrCode: String,
+    val manualEntryKey: String,
+)
+
+@Serializable
 data class Enable2faResponseDto(
-    val qrCodeUrl: String,
-    val secret: String,
-    val recoveryCodes: List<String>,
+    val message: String = "",
+    val recoveryCodes: List<String> = emptyList(),
 )
 
 @Serializable
@@ -122,6 +128,7 @@ data class UserDto(
     val isEmailVerified: Boolean = false,
     val lastLoginAt: String? = null,
     val twoFactorEnabled: Boolean = false,
+    val avatarUrl: String? = null,
     val profile: UserProfileDto? = null,
     val settings: UserSettingsDto? = null,
     val role: RoleDto? = null,

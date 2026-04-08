@@ -12,5 +12,6 @@ data class FileInfo(
 data class UploadUrl(
     val uploadToken: String,
     val uploadUrl: String,
-    val expiresAt: String,
+    val key: String?,
+    val expiresIn: Int,
 )

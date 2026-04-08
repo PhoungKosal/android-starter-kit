@@ -7,16 +7,22 @@ import com.t3r.android_starter_kit.domain.model.UploadUrl
 interface FilesRepository {
 
     suspend fun requestUploadUrl(
-        fileName: String,
+        originalName: String,
         mimeType: String,
         size: Long,
+        visibility: String? = null,
     ): Result<UploadUrl>
 
     suspend fun confirmUpload(
         uploadToken: String,
-        fileName: String? = null,
-        mimeType: String? = null,
+        size: Long,
     ): Result<FileInfo>
+
+    suspend fun uploadToPresignedUrl(
+        url: String,
+        bytes: ByteArray,
+        mimeType: String,
+    ): Result<Unit>
 
     suspend fun getFile(id: String): Result<FileInfo>
 

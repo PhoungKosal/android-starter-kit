@@ -6,6 +6,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.AlertDialog
@@ -26,9 +29,12 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import coil3.compose.AsyncImage
 import com.t3r.android_starter_kit.presentation.components.LoadingButton
 import com.t3r.android_starter_kit.presentation.components.LoadingOutlinedButton
 
@@ -66,9 +72,40 @@ fun TwoFactorScreen(
             onDismissRequest = { viewModel.onEvent(TwoFactorEvent.DismissSetupDialog) },
             title = { Text("Enable Two-Factor Auth") },
             text = {
-                Column {
-                    Text("Enter the 6-digit code from your authenticator app to enable 2FA.")
-                    Spacer(modifier = Modifier.height(16.dp))
+                Column(
+                    modifier = Modifier.verticalScroll(rememberScrollState()),
+                ) {
+                    if (state.qrCodeUrl != null) {
+                        Text(
+                            text = "Scan this QR code with your authenticator app:",
+                            style = MaterialTheme.typography.bodyMedium,
+                        )
+                        Spacer(modifier = Modifier.height(12.dp))
+                        AsyncImage(
+                            model = state.qrCodeUrl,
+                            contentDescription = "QR Code",
+                            modifier = Modifier
+                                .size(200.dp)
+                                .align(Alignment.CenterHorizontally),
+                        )
+                        Spacer(modifier = Modifier.height(12.dp))
+                    }
+                    if (state.secret != null) {
+                        Text(
+                            text = "Or enter this key manually:",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = state.secret!!,
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.fillMaxWidth(),
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                    }
                     OutlinedTextField(
                         value = state.verifyCode,
                         onValueChange = { viewModel.onEvent(TwoFactorEvent.UpdateVerifyCode(it)) },
@@ -101,7 +138,7 @@ fun TwoFactorScreen(
             title = { Text("Disable Two-Factor Auth") },
             text = {
                 Column {
-                    Text("Enter your password to disable 2FA.")
+                    Text("Enter your password and a 6-digit code to disable 2FA.")
                     Spacer(modifier = Modifier.height(16.dp))
                     OutlinedTextField(
                         value = state.disablePassword,
@@ -111,6 +148,14 @@ fun TwoFactorScreen(
                         visualTransformation = PasswordVisualTransformation(),
                         modifier = Modifier.fillMaxWidth(),
                     )
+                    Spacer(modifier = Modifier.height(12.dp))
+                    OutlinedTextField(
+                        value = state.disableCode,
+                        onValueChange = { viewModel.onEvent(TwoFactorEvent.UpdateDisableCode(it)) },
+                        label = { Text("Authenticator Code") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
                 }
             },
             confirmButton = {
@@ -118,7 +163,7 @@ fun TwoFactorScreen(
                     text = "Disable",
                     onClick = { viewModel.onEvent(TwoFactorEvent.ConfirmDisable) },
                     isLoading = state.isLoading,
-                    enabled = state.disablePassword.isNotBlank(),
+                    enabled = state.disablePassword.isNotBlank() && state.disableCode.isNotBlank(),
                 )
             },
             dismissButton = {

@@ -1,5 +1,6 @@
 package com.t3r.android_starter_kit.presentation.profile
 
+import android.net.Uri
 import com.t3r.android_starter_kit.core.result.AppError
 import com.t3r.android_starter_kit.domain.model.User
 
@@ -17,6 +18,9 @@ data class ProfileState(
     val editPhoneNumber: String = "",
     val isSaving: Boolean = false,
     val profileUpdated: Boolean = false,
+
+    // Avatar upload
+    val isUploadingAvatar: Boolean = false,
 
     // Delete account
     val showDeleteDialog: Boolean = false,
@@ -36,6 +40,9 @@ sealed interface ProfileEvent {
     data class UpdateLastName(val value: String) : ProfileEvent
     data class UpdatePhoneNumber(val value: String) : ProfileEvent
     data object SaveProfile : ProfileEvent
+
+    // Avatar
+    data class UploadAvatar(val uri: Uri) : ProfileEvent
 
     // Delete account
     data object ShowDeleteDialog : ProfileEvent

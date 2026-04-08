@@ -168,13 +168,13 @@ class AuthRepositoryImpl @Inject constructor(
         }.map { it.toDomain() }
     }
 
-    override suspend fun setAvatar(fileId: String): Result<User> {
+    override suspend fun setAvatar(fileId: String): Result<Unit> {
         val token = dataStore.accessToken.first() ?: return Result.Error(
             com.t3r.android_starter_kit.core.result.AppError("UNAUTHORIZED", "Not authenticated")
         )
         return safeApiCall {
             authApi.setAvatar("Bearer $token", SetAvatarRequestDto(fileId))
-        }.map { it.toDomain() }
+        }.map { }
     }
 
     override suspend fun deleteAvatar(): Result<Unit> {
@@ -195,13 +195,32 @@ class AuthRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun enable2fa(code: String): Result<TwoFactorSetup> = safeApiCall {
-        authApi.enable2fa(Enable2faRequestDto(code))
-    }.map { it.toDomain() }
+    override suspend fun setup2fa(): Result<TwoFactorSetup> {
+        val token = dataStore.accessToken.first() ?: return Result.Error(
+            com.t3r.android_starter_kit.core.result.AppError("UNAUTHORIZED", "Not authenticated")
+        )
+        return safeApiCall {
+            authApi.setup2fa("Bearer $token")
+        }.map { it.toDomain() }
+    }
 
-    override suspend fun disable2fa(password: String): Result<String> = safeApiCall {
-        authApi.disable2fa(Disable2faRequestDto(password))
-    }.map { it.message }
+    override suspend fun enable2fa(code: String): Result<List<String>> {
+        val token = dataStore.accessToken.first() ?: return Result.Error(
+            com.t3r.android_starter_kit.core.result.AppError("UNAUTHORIZED", "Not authenticated")
+        )
+        return safeApiCall {
+            authApi.enable2fa("Bearer $token", Enable2faRequestDto(code))
+        }.map { it.toDomain() }
+    }
+
+    override suspend fun disable2fa(password: String, code: String): Result<String> {
+        val token = dataStore.accessToken.first() ?: return Result.Error(
+            com.t3r.android_starter_kit.core.result.AppError("UNAUTHORIZED", "Not authenticated")
+        )
+        return safeApiCall {
+            authApi.disable2fa("Bearer $token", Disable2faRequestDto(password, code))
+        }.map { it.message }
+    }
 
     override suspend fun isLoggedIn(): Boolean = dataStore.isLoggedIn.first()
 

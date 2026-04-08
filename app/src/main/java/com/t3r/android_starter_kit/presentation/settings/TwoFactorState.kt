@@ -15,6 +15,7 @@ data class TwoFactorState(
 
     // Disable flow
     val disablePassword: String = "",
+    val disableCode: String = "",
     val showDisableDialog: Boolean = false,
 
     val message: String? = null,
@@ -32,6 +33,7 @@ sealed interface TwoFactorEvent {
     data object ShowDisableDialog : TwoFactorEvent
     data object DismissDisableDialog : TwoFactorEvent
     data class UpdateDisablePassword(val value: String) : TwoFactorEvent
+    data class UpdateDisableCode(val value: String) : TwoFactorEvent
     data object ConfirmDisable : TwoFactorEvent
 
     data object ClearMessage : TwoFactorEvent

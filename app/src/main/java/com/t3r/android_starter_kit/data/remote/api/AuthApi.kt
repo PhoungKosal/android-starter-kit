@@ -15,6 +15,7 @@ import com.t3r.android_starter_kit.data.remote.dto.auth.RegisterRequestDto
 import com.t3r.android_starter_kit.data.remote.dto.auth.RegisterResponseDto
 import com.t3r.android_starter_kit.data.remote.dto.auth.ResetPasswordRequestDto
 import com.t3r.android_starter_kit.data.remote.dto.auth.SetAvatarRequestDto
+import com.t3r.android_starter_kit.data.remote.dto.auth.Setup2faResponseDto
 import com.t3r.android_starter_kit.data.remote.dto.auth.UpdateProfileRequestDto
 import com.t3r.android_starter_kit.data.remote.dto.auth.UserDto
 import com.t3r.android_starter_kit.data.remote.dto.auth.Verify2faRequestDto
@@ -58,11 +59,20 @@ interface AuthApi {
     @POST("auth/2fa/verify")
     suspend fun verify2fa(@Body request: Verify2faRequestDto): LoginResponseDto
 
-    @POST("auth/enable-2fa")
-    suspend fun enable2fa(@Body request: Enable2faRequestDto): Enable2faResponseDto
+    @POST("auth/2fa/setup")
+    suspend fun setup2fa(@Header("Authorization") token: String): Setup2faResponseDto
 
-    @POST("auth/disable-2fa")
-    suspend fun disable2fa(@Body request: Disable2faRequestDto): MessageResponseDto
+    @POST("auth/2fa/enable")
+    suspend fun enable2fa(
+        @Header("Authorization") token: String,
+        @Body request: Enable2faRequestDto,
+    ): Enable2faResponseDto
+
+    @HTTP(method = "DELETE", path = "auth/2fa/disable", hasBody = true)
+    suspend fun disable2fa(
+        @Header("Authorization") token: String,
+        @Body request: Disable2faRequestDto,
+    ): MessageResponseDto
 
     @GET("auth/me")
     suspend fun getMe(@Header("Authorization") token: String): MeResponseDto
@@ -77,7 +87,7 @@ interface AuthApi {
     suspend fun setAvatar(
         @Header("Authorization") token: String,
         @Body request: SetAvatarRequestDto,
-    ): UserDto
+    ): FileDto
 
     @DELETE("auth/me/avatar")
     suspend fun deleteAvatar(@Header("Authorization") token: String)

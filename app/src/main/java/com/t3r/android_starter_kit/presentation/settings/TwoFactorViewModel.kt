@@ -32,15 +32,33 @@ class TwoFactorViewModel @Inject constructor(
             TwoFactorEvent.ConfirmEnable -> confirmEnable()
             TwoFactorEvent.DismissSetupDialog -> _state.update { it.copy(showSetupDialog = false) }
             TwoFactorEvent.ShowDisableDialog -> _state.update { it.copy(showDisableDialog = true) }
-            TwoFactorEvent.DismissDisableDialog -> _state.update { it.copy(showDisableDialog = false, disablePassword = "") }
+            TwoFactorEvent.DismissDisableDialog -> _state.update { it.copy(showDisableDialog = false, disablePassword = "", disableCode = "") }
             is TwoFactorEvent.UpdateDisablePassword -> _state.update { it.copy(disablePassword = event.value) }
+            is TwoFactorEvent.UpdateDisableCode -> _state.update { it.copy(disableCode = event.value) }
             TwoFactorEvent.ConfirmDisable -> confirmDisable()
             TwoFactorEvent.ClearMessage -> _state.update { it.copy(message = null, error = null) }
         }
     }
 
     private fun requestEnable() {
-        _state.update { it.copy(showSetupDialog = true, verifyCode = "") }
+        viewModelScope.launch {
+            _state.update { it.copy(isLoading = true) }
+            authRepository.setup2fa()
+                .onSuccess { setup ->
+                    _state.update {
+                        it.copy(
+                            isLoading = false,
+                            showSetupDialog = true,
+                            qrCodeUrl = setup.qrCode,
+                            secret = setup.manualEntryKey,
+                            verifyCode = "",
+                        )
+                    }
+                }
+                .onError { error ->
+                    _state.update { it.copy(isLoading = false, error = error) }
+                }
+        }
     }
 
     private fun confirmEnable() {
@@ -49,14 +67,13 @@ class TwoFactorViewModel @Inject constructor(
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true) }
             authRepository.enable2fa(code)
-                .onSuccess { setup ->
+                .onSuccess { recoveryCodes ->
                     _state.update {
                         it.copy(
                             isLoading = false,
                             twoFactorEnabled = true,
-                            qrCodeUrl = setup.qrCodeUrl,
-                            secret = setup.secret,
-                            recoveryCodes = setup.recoveryCodes,
+                            showSetupDialog = false,
+                            recoveryCodes = recoveryCodes,
                             message = "Two-factor authentication enabled",
                         )
                     }
@@ -69,10 +86,11 @@ class TwoFactorViewModel @Inject constructor(
 
     private fun confirmDisable() {
         val password = _state.value.disablePassword
-        if (password.isBlank()) return
+        val code = _state.value.disableCode
+        if (password.isBlank() || code.isBlank()) return
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true) }
-            authRepository.disable2fa(password)
+            authRepository.disable2fa(password, code)
                 .onSuccess { msg ->
                     _state.update {
                         it.copy(
@@ -80,6 +98,7 @@ class TwoFactorViewModel @Inject constructor(
                             twoFactorEnabled = false,
                             showDisableDialog = false,
                             disablePassword = "",
+                            disableCode = "",
                             message = msg,
                         )
                     }

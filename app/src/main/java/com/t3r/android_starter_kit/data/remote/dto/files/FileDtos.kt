@@ -4,23 +4,24 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class RequestUploadUrlDto(
-    val fileName: String,
+    val originalName: String,
     val mimeType: String,
     val size: Long,
+    val visibility: String? = null,
 )
 
 @Serializable
 data class UploadUrlResponseDto(
     val uploadToken: String,
     val uploadUrl: String,
-    val expiresAt: String,
+    val key: String? = null,
+    val expiresIn: Int = 0,
 )
 
 @Serializable
 data class ConfirmUploadRequestDto(
     val uploadToken: String,
-    val fileName: String? = null,
-    val mimeType: String? = null,
+    val size: Long,
 )
 
 @Serializable

@@ -1,4 +1,4 @@
-package com.t3r.android_starter_kit.ui.theme
+package com.t3r.android_starter_kit.presentation.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle

@@ -1,6 +1,5 @@
-package com.t3r.android_starter_kit.ui.theme
+package com.t3r.android_starter_kit.presentation.theme
 
-import android.app.Activity
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme

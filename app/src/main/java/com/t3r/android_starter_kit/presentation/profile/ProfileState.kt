@@ -1,7 +1,7 @@
 package com.t3r.android_starter_kit.presentation.profile
 
-import com.starterkit.app.core.result.AppError
-import com.starterkit.app.domain.model.User
+import com.t3r.android_starter_kit.core.result.AppError
+import com.t3r.android_starter_kit.domain.model.User
 
 data class ProfileState(
     val isLoading: Boolean = true,

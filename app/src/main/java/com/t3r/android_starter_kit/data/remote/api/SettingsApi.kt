@@ -1,37 +1,23 @@
 package com.t3r.android_starter_kit.data.remote.api
 
-interface NotificationsApi {
+import com.t3r.android_starter_kit.data.remote.dto.settings.SystemSettingDto
+import com.t3r.android_starter_kit.data.remote.dto.settings.UpdateSettingRequestDto
+import retrofit2.http.Body
+import retrofit2.http.GET
+import retrofit2.http.PATCH
+import retrofit2.http.Path
 
-    @GET("notifications")
-    suspend fun getNotifications(
-        @Query("page") page: Int = 1,
-        @Query("limit") limit: Int = 20,
-    ): PaginatedResponseDto<NotificationDto>
+interface SettingsApi {
 
-    @GET("notifications/unread")
-    suspend fun getUnreadNotifications(): List<NotificationDto>
+    @GET("settings")
+    suspend fun getSettings(): List<SystemSettingDto>
 
-    @GET("notifications/unread/count")
-    suspend fun getUnreadCount(): UnreadCountDto
+    @GET("settings/{key}")
+    suspend fun getSetting(@Path("key") key: String): SystemSettingDto
 
-    @PATCH("notifications/{id}/read")
-    suspend fun markAsRead(@Path("id") id: String): NotificationDto
-
-    @POST("notifications/read-all")
-    suspend fun markAllAsRead()
-
-    @DELETE("notifications/{id}")
-    suspend fun deleteNotification(@Path("id") id: String)
-
-    @POST("notifications/action")
-    suspend fun handleAction(@Body request: NotificationActionRequestDto)
-
-    @POST("notifications/devices")
-    suspend fun registerDevice(@Body request: RegisterDeviceRequestDto)
-
-    @POST("notifications/devices/anonymous")
-    suspend fun registerAnonymousDevice(@Body request: RegisterDeviceRequestDto)
-
-    @DELETE("notifications/devices/{token}")
-    suspend fun unregisterDevice(@Path("token") token: String)
+    @PATCH("settings/{key}")
+    suspend fun updateSetting(
+        @Path("key") key: String,
+        @Body request: UpdateSettingRequestDto,
+    ): SystemSettingDto
 }

@@ -1,10 +1,11 @@
 package com.t3r.android_starter_kit.di
 
 
+import com.t3r.android_starter_kit.BuildConfig
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
-import com.starterkit.app.BuildConfig
-import com.starterkit.app.data.local.DataStoreManager
-import com.starterkit.app.data.remote.interceptor.AuthInterceptor
+import com.t3r.android_starter_kit.data.local.DataStoreManager
+import com.t3r.android_starter_kit.data.remote.interceptor.ApiResponseUnwrapInterceptor
+import com.t3r.android_starter_kit.data.remote.interceptor.AuthInterceptor
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -62,6 +63,7 @@ object NetworkModule {
         loggingInterceptor: HttpLoggingInterceptor,
     ): OkHttpClient = OkHttpClient.Builder()
         .addInterceptor(loggingInterceptor)
+        .addInterceptor(ApiResponseUnwrapInterceptor())
         .connectTimeout(30, TimeUnit.SECONDS)
         .readTimeout(30, TimeUnit.SECONDS)
         .writeTimeout(30, TimeUnit.SECONDS)
@@ -76,6 +78,7 @@ object NetworkModule {
     ): OkHttpClient = OkHttpClient.Builder()
         .addInterceptor(authInterceptor)
         .addInterceptor(loggingInterceptor)
+        .addInterceptor(ApiResponseUnwrapInterceptor())
         .connectTimeout(30, TimeUnit.SECONDS)
         .readTimeout(30, TimeUnit.SECONDS)
         .writeTimeout(30, TimeUnit.SECONDS)

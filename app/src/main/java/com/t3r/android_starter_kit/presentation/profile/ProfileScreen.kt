@@ -39,9 +39,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
-import com.starterkit.app.presentation.components.ErrorView
-import com.starterkit.app.presentation.components.LoadingButton
-import com.starterkit.app.presentation.components.LoadingView
+import com.t3r.android_starter_kit.presentation.components.ErrorView
+import com.t3r.android_starter_kit.presentation.components.LoadingButton
+import com.t3r.android_starter_kit.presentation.components.LoadingView
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

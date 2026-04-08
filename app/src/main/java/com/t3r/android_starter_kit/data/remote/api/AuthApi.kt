@@ -1,5 +1,34 @@
 package com.t3r.android_starter_kit.data.remote.api
 
+import com.t3r.android_starter_kit.data.remote.dto.auth.DeleteAccountRequestDto
+import com.t3r.android_starter_kit.data.remote.dto.auth.Disable2faRequestDto
+import com.t3r.android_starter_kit.data.remote.dto.auth.Enable2faRequestDto
+import com.t3r.android_starter_kit.data.remote.dto.auth.Enable2faResponseDto
+import com.t3r.android_starter_kit.data.remote.dto.auth.ForgotPasswordRequestDto
+import com.t3r.android_starter_kit.data.remote.dto.auth.LoginRequestDto
+import com.t3r.android_starter_kit.data.remote.dto.auth.LoginResponseDto
+import com.t3r.android_starter_kit.data.remote.dto.auth.LogoutRequestDto
+import com.t3r.android_starter_kit.data.remote.dto.auth.MeResponseDto
+import com.t3r.android_starter_kit.data.remote.dto.auth.RefreshTokenRequestDto
+import com.t3r.android_starter_kit.data.remote.dto.auth.RefreshTokenResponseDto
+import com.t3r.android_starter_kit.data.remote.dto.auth.RegisterRequestDto
+import com.t3r.android_starter_kit.data.remote.dto.auth.RegisterResponseDto
+import com.t3r.android_starter_kit.data.remote.dto.auth.ResetPasswordRequestDto
+import com.t3r.android_starter_kit.data.remote.dto.auth.SetAvatarRequestDto
+import com.t3r.android_starter_kit.data.remote.dto.auth.UpdateProfileRequestDto
+import com.t3r.android_starter_kit.data.remote.dto.auth.UserDto
+import com.t3r.android_starter_kit.data.remote.dto.auth.Verify2faRequestDto
+import com.t3r.android_starter_kit.data.remote.dto.auth.VerifyEmailRequestDto
+import com.t3r.android_starter_kit.data.remote.dto.common.MessageResponseDto
+import com.t3r.android_starter_kit.data.remote.dto.files.FileDto
+import retrofit2.http.Body
+import retrofit2.http.DELETE
+import retrofit2.http.GET
+import retrofit2.http.HTTP
+import retrofit2.http.Header
+import retrofit2.http.PATCH
+import retrofit2.http.POST
+
 interface AuthApi {
 
     @POST("auth/login")
@@ -26,7 +55,7 @@ interface AuthApi {
     @POST("auth/resend-verification")
     suspend fun resendVerification(@Body request: ForgotPasswordRequestDto): MessageResponseDto
 
-    @POST("auth/verify-2fa")
+    @POST("auth/2fa/verify")
     suspend fun verify2fa(@Body request: Verify2faRequestDto): LoginResponseDto
 
     @POST("auth/enable-2fa")

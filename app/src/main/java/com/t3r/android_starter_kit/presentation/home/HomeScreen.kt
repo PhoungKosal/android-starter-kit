@@ -36,8 +36,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
-import com.starterkit.app.presentation.components.ErrorView
-import com.starterkit.app.presentation.components.LoadingView
+import com.t3r.android_starter_kit.presentation.components.ErrorView
+import com.t3r.android_starter_kit.presentation.components.LoadingView
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -134,7 +134,7 @@ fun HomeScreen(
 }
 
 @Composable
-private fun WelcomeCard(user: com.starterkit.app.domain.model.User) {
+private fun WelcomeCard(user: com.t3r.android_starter_kit.domain.model.User) {
     Card(
         modifier = Modifier.fillMaxWidth(),
     ) {

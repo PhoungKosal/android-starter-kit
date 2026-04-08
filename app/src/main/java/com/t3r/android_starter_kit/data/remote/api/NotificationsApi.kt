@@ -1,12 +1,24 @@
 package com.t3r.android_starter_kit.data.remote.api
 
+import com.t3r.android_starter_kit.data.remote.dto.notifications.NotificationActionRequestDto
+import com.t3r.android_starter_kit.data.remote.dto.notifications.NotificationDto
+import com.t3r.android_starter_kit.data.remote.dto.notifications.RegisterDeviceRequestDto
+import com.t3r.android_starter_kit.data.remote.dto.notifications.UnreadCountDto
+import retrofit2.http.Body
+import retrofit2.http.DELETE
+import retrofit2.http.GET
+import retrofit2.http.PATCH
+import retrofit2.http.POST
+import retrofit2.http.Path
+import retrofit2.http.Query
+
 interface NotificationsApi {
 
     @GET("notifications")
     suspend fun getNotifications(
         @Query("page") page: Int = 1,
         @Query("limit") limit: Int = 20,
-    ): PaginatedResponseDto<NotificationDto>
+    ): List<NotificationDto>
 
     @GET("notifications/unread")
     suspend fun getUnreadNotifications(): List<NotificationDto>

@@ -42,9 +42,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.starterkit.app.domain.model.Notification
-import com.starterkit.app.presentation.components.ErrorView
-import com.starterkit.app.presentation.components.LoadingView
+import com.t3r.android_starter_kit.domain.model.Notification
+import com.t3r.android_starter_kit.presentation.components.ErrorView
+import com.t3r.android_starter_kit.presentation.components.LoadingView
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

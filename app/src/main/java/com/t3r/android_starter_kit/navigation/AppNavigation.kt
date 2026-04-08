@@ -3,21 +3,20 @@ package com.t3r.android_starter_kit.navigation
 import androidx.compose.runtime.Composable
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation3.runtime.NavKey
-import androidx.navigation3.runtime.entry
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
-import com.starterkit.app.presentation.auth.AuthViewModel
-import com.starterkit.app.presentation.auth.ForgotPasswordScreen
-import com.starterkit.app.presentation.auth.LoginScreen
-import com.starterkit.app.presentation.auth.RegisterScreen
-import com.starterkit.app.presentation.auth.TwoFactorScreen
-import com.starterkit.app.presentation.home.HomeScreen
-import com.starterkit.app.presentation.home.HomeViewModel
-import com.starterkit.app.presentation.notifications.NotificationsScreen
-import com.starterkit.app.presentation.notifications.NotificationsViewModel
-import com.starterkit.app.presentation.profile.ProfileScreen
-import com.starterkit.app.presentation.profile.ProfileViewModel
+import com.t3r.android_starter_kit.presentation.auth.AuthViewModel
+import com.t3r.android_starter_kit.presentation.auth.ForgotPasswordScreen
+import com.t3r.android_starter_kit.presentation.auth.LoginScreen
+import com.t3r.android_starter_kit.presentation.auth.RegisterScreen
+import com.t3r.android_starter_kit.presentation.auth.TwoFactorScreen
+import com.t3r.android_starter_kit.presentation.home.HomeScreen
+import com.t3r.android_starter_kit.presentation.home.HomeViewModel
+import com.t3r.android_starter_kit.presentation.notifications.NotificationsScreen
+import com.t3r.android_starter_kit.presentation.notifications.NotificationsViewModel
+import com.t3r.android_starter_kit.presentation.profile.ProfileScreen
+import com.t3r.android_starter_kit.presentation.profile.ProfileViewModel
 
 @Composable
 fun AppNavigation(

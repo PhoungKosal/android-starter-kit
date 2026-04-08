@@ -1,7 +1,7 @@
 package com.t3r.android_starter_kit.presentation.notifications
 
-import com.starterkit.app.core.result.AppError
-import com.starterkit.app.domain.model.Notification
+import com.t3r.android_starter_kit.core.result.AppError
+import com.t3r.android_starter_kit.domain.model.Notification
 
 data class NotificationsState(
     val isLoading: Boolean = true,

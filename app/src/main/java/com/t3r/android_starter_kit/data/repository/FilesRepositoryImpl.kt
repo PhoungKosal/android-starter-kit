@@ -2,13 +2,17 @@ package com.t3r.android_starter_kit.data.repository
 
 
 import com.t3r.android_starter_kit.core.network.safeApiCall
+import com.t3r.android_starter_kit.core.result.Result
+import com.t3r.android_starter_kit.core.result.map
+import com.t3r.android_starter_kit.data.mapper.toDomain
 import com.t3r.android_starter_kit.data.remote.api.FilesApi
 import com.t3r.android_starter_kit.data.remote.dto.files.AttachFileRequestDto
+import com.t3r.android_starter_kit.data.remote.dto.files.ConfirmUploadRequestDto
 import com.t3r.android_starter_kit.data.remote.dto.files.RequestUploadUrlDto
 import com.t3r.android_starter_kit.domain.model.FileInfo
 import com.t3r.android_starter_kit.domain.model.UploadUrl
 import com.t3r.android_starter_kit.domain.repository.FilesRepository
-//import javax.inject.Inject
+import javax.inject.Inject
 
 class FilesRepositoryImpl @Inject constructor(
     private val filesApi: FilesApi,

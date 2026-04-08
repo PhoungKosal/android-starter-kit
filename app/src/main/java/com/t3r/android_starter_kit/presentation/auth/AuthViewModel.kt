@@ -2,11 +2,11 @@ package com.t3r.android_starter_kit.presentation.auth
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.starterkit.app.core.result.onError
-import com.starterkit.app.core.result.onSuccess
-import com.starterkit.app.domain.model.LoginResult
-import com.starterkit.app.domain.model.RegisterResult
-import com.starterkit.app.domain.repository.AuthRepository
+import com.t3r.android_starter_kit.core.result.onError
+import com.t3r.android_starter_kit.core.result.onSuccess
+import com.t3r.android_starter_kit.domain.model.LoginResult
+import com.t3r.android_starter_kit.domain.model.RegisterResult
+import com.t3r.android_starter_kit.domain.repository.AuthRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow

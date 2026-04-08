@@ -9,39 +9,51 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.lifecycle.lifecycleScope
+import com.t3r.android_starter_kit.data.local.DataStoreManager
+import com.t3r.android_starter_kit.navigation.AppNavigation
 import com.t3r.android_starter_kit.presentation.theme.AndroidstarterkitTheme
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
+    @Inject
+    lateinit var dataStoreManager: DataStoreManager
+
+    private var isReady by mutableStateOf(false)
+    private var isLoggedIn by mutableStateOf(false)
+
     override fun onCreate(savedInstanceState: Bundle?) {
+        val splashScreen = installSplashScreen()
         super.onCreate(savedInstanceState)
+
+        // Keep splash screen until we determine auth state
+        splashScreen.setKeepOnScreenCondition { !isReady }
+
+        // Check auth state
+        lifecycleScope.launch {
+            isLoggedIn = dataStoreManager.isLoggedIn.first()
+            isReady = true
+        }
+
         enableEdgeToEdge()
+
         setContent {
             AndroidstarterkitTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
+                if (isReady) {
+                    AppNavigation(isLoggedIn = isLoggedIn)
                 }
             }
         }
-    }
-}
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    AndroidstarterkitTheme {
-        Greeting("Android")
     }
 }

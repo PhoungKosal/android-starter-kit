@@ -1,10 +1,10 @@
 package com.t3r.android_starter_kit.di
 
-import com.starterkit.app.data.remote.api.AuthApi
-import com.starterkit.app.data.remote.api.FilesApi
-import com.starterkit.app.data.remote.api.NotificationsApi
-import com.starterkit.app.data.remote.api.SettingsApi
-import com.starterkit.app.data.remote.api.UsersApi
+import com.t3r.android_starter_kit.data.remote.api.AuthApi
+import com.t3r.android_starter_kit.data.remote.api.FilesApi
+import com.t3r.android_starter_kit.data.remote.api.NotificationsApi
+import com.t3r.android_starter_kit.data.remote.api.SettingsApi
+import com.t3r.android_starter_kit.data.remote.api.UsersApi
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

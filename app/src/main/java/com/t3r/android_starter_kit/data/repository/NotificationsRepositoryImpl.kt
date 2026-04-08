@@ -1,14 +1,14 @@
 package com.t3r.android_starter_kit.data.repository
 
-import com.starterkit.app.core.network.safeApiCall
-import com.starterkit.app.core.result.Result
-import com.starterkit.app.core.result.map
-import com.starterkit.app.data.mapper.toDomain
-import com.starterkit.app.data.remote.api.NotificationsApi
-import com.starterkit.app.data.remote.dto.notifications.RegisterDeviceRequestDto
-import com.starterkit.app.domain.model.Notification
-import com.starterkit.app.domain.model.PaginatedData
-import com.starterkit.app.domain.repository.NotificationsRepository
+import com.t3r.android_starter_kit.core.network.safeApiCall
+import com.t3r.android_starter_kit.core.result.Result
+import com.t3r.android_starter_kit.core.result.map
+import com.t3r.android_starter_kit.data.mapper.toDomain
+import com.t3r.android_starter_kit.data.remote.api.NotificationsApi
+import com.t3r.android_starter_kit.data.remote.dto.notifications.RegisterDeviceRequestDto
+import com.t3r.android_starter_kit.domain.model.Notification
+import com.t3r.android_starter_kit.domain.model.PaginatedData
+import com.t3r.android_starter_kit.domain.repository.NotificationsRepository
 import javax.inject.Inject
 
 class NotificationsRepositoryImpl @Inject constructor(
@@ -18,13 +18,13 @@ class NotificationsRepositoryImpl @Inject constructor(
     override suspend fun getNotifications(page: Int, limit: Int): Result<PaginatedData<Notification>> =
         safeApiCall {
             notificationsApi.getNotifications(page, limit)
-        }.map { response ->
+        }.map { list ->
             PaginatedData(
-                data = response.data.map { it.toDomain() },
-                currentPage = response.meta.currentPage,
-                totalPages = response.meta.totalPages,
-                totalItems = response.meta.totalItems,
-                itemsPerPage = response.meta.itemsPerPage,
+                data = list.map { it.toDomain() },
+                currentPage = page,
+                totalPages = 1,
+                totalItems = list.size,
+                itemsPerPage = limit,
             )
         }
 

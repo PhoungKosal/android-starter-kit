@@ -1,6 +1,11 @@
 package com.t3r.android_starter_kit.core.network
 
+import com.t3r.android_starter_kit.core.result.AppError
+import com.t3r.android_starter_kit.core.result.Result
+import com.t3r.android_starter_kit.data.remote.dto.common.ErrorResponseDto
 import java.io.IOException
+import kotlinx.serialization.json.Json
+import retrofit2.HttpException
 
 /**
  * Safely executes a suspend API call and wraps the result.

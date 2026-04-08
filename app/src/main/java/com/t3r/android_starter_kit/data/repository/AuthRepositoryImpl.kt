@@ -1,14 +1,14 @@
 package com.t3r.android_starter_kit.data.repository
 
-import com.starterkit.app.core.network.safeApiCall
-import com.starterkit.app.core.result.Result
-import com.starterkit.app.core.result.map
-import com.starterkit.app.data.local.DataStoreManager
-import com.starterkit.app.data.mapper.toDomain
-import com.starterkit.app.data.remote.api.AuthApi
-import com.starterkit.app.data.remote.dto.auth.*
-import com.starterkit.app.domain.model.*
-import com.starterkit.app.domain.repository.AuthRepository
+import com.t3r.android_starter_kit.core.network.safeApiCall
+import com.t3r.android_starter_kit.core.result.Result
+import com.t3r.android_starter_kit.core.result.map
+import com.t3r.android_starter_kit.data.local.DataStoreManager
+import com.t3r.android_starter_kit.data.mapper.toDomain
+import com.t3r.android_starter_kit.data.remote.api.AuthApi
+import com.t3r.android_starter_kit.data.remote.dto.auth.*
+import com.t3r.android_starter_kit.domain.model.*
+import com.t3r.android_starter_kit.domain.repository.AuthRepository
 import kotlinx.coroutines.flow.first
 import javax.inject.Inject
 
@@ -116,7 +116,7 @@ class AuthRepositoryImpl @Inject constructor(
 
     override suspend fun getMe(): Result<User> {
         val token = dataStore.accessToken.first() ?: return Result.Error(
-            com.starterkit.app.core.result.AppError("UNAUTHORIZED", "Not authenticated")
+            com.t3r.android_starter_kit.core.result.AppError("UNAUTHORIZED", "Not authenticated")
         )
         return safeApiCall {
             authApi.getMe("Bearer $token")
@@ -130,7 +130,7 @@ class AuthRepositoryImpl @Inject constructor(
         phoneNumber: String?,
     ): Result<User> {
         val token = dataStore.accessToken.first() ?: return Result.Error(
-            com.starterkit.app.core.result.AppError("UNAUTHORIZED", "Not authenticated")
+            com.t3r.android_starter_kit.core.result.AppError("UNAUTHORIZED", "Not authenticated")
         )
         return safeApiCall {
             authApi.updateProfile(
@@ -142,7 +142,7 @@ class AuthRepositoryImpl @Inject constructor(
 
     override suspend fun setAvatar(fileId: String): Result<User> {
         val token = dataStore.accessToken.first() ?: return Result.Error(
-            com.starterkit.app.core.result.AppError("UNAUTHORIZED", "Not authenticated")
+            com.t3r.android_starter_kit.core.result.AppError("UNAUTHORIZED", "Not authenticated")
         )
         return safeApiCall {
             authApi.setAvatar("Bearer $token", SetAvatarRequestDto(fileId))
@@ -151,14 +151,14 @@ class AuthRepositoryImpl @Inject constructor(
 
     override suspend fun deleteAvatar(): Result<Unit> {
         val token = dataStore.accessToken.first() ?: return Result.Error(
-            com.starterkit.app.core.result.AppError("UNAUTHORIZED", "Not authenticated")
+            com.t3r.android_starter_kit.core.result.AppError("UNAUTHORIZED", "Not authenticated")
         )
         return safeApiCall { authApi.deleteAvatar("Bearer $token") }
     }
 
     override suspend fun deleteAccount(password: String): Result<Unit> {
         val token = dataStore.accessToken.first() ?: return Result.Error(
-            com.starterkit.app.core.result.AppError("UNAUTHORIZED", "Not authenticated")
+            com.t3r.android_starter_kit.core.result.AppError("UNAUTHORIZED", "Not authenticated")
         )
         return safeApiCall {
             authApi.deleteAccount("Bearer $token", DeleteAccountRequestDto(password))

@@ -34,7 +34,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.starterkit.app.presentation.components.LoadingButton
+import com.t3r.android_starter_kit.presentation.components.LoadingButton
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

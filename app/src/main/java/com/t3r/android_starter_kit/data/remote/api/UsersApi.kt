@@ -1,5 +1,16 @@
 package com.t3r.android_starter_kit.data.remote.api
 
+import com.t3r.android_starter_kit.data.remote.dto.auth.UserDto
+import com.t3r.android_starter_kit.data.remote.dto.auth.UserSettingsDto
+import com.t3r.android_starter_kit.data.remote.dto.common.PaginatedResponseDto
+import com.t3r.android_starter_kit.data.remote.dto.settings.UpdateUserSettingsRequestDto
+import retrofit2.http.Body
+import retrofit2.http.DELETE
+import retrofit2.http.GET
+import retrofit2.http.PATCH
+import retrofit2.http.Path
+import retrofit2.http.Query
+
 interface UsersApi {
 
     @GET("users")

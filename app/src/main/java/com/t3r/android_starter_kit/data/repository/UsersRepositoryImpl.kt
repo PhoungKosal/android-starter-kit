@@ -1,13 +1,13 @@
 package com.t3r.android_starter_kit.data.repository
 
-import com.starterkit.app.core.network.safeApiCall
-import com.starterkit.app.core.result.Result
-import com.starterkit.app.core.result.map
-import com.starterkit.app.data.mapper.toDomain
-import com.starterkit.app.data.remote.api.UsersApi
-import com.starterkit.app.domain.model.PaginatedData
-import com.starterkit.app.domain.model.User
-import com.starterkit.app.domain.repository.UsersRepository
+import com.t3r.android_starter_kit.core.network.safeApiCall
+import com.t3r.android_starter_kit.core.result.Result
+import com.t3r.android_starter_kit.core.result.map
+import com.t3r.android_starter_kit.data.mapper.toDomain
+import com.t3r.android_starter_kit.data.remote.api.UsersApi
+import com.t3r.android_starter_kit.domain.model.PaginatedData
+import com.t3r.android_starter_kit.domain.model.User
+import com.t3r.android_starter_kit.domain.repository.UsersRepository
 import javax.inject.Inject
 
 class UsersRepositoryImpl @Inject constructor(

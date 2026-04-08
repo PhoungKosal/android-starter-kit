@@ -1,6 +1,6 @@
 package com.t3r.android_starter_kit.presentation.auth
 
-import com.starterkit.app.core.result.AppError
+import com.t3r.android_starter_kit.core.result.AppError
 
 data class AuthState(
     val isLoading: Boolean = false,

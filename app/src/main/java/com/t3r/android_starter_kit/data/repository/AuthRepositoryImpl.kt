@@ -155,7 +155,7 @@ class AuthRepositoryImpl @Inject constructor(
         phoneNumber: String?,
     ): Result<User> = safeApiCall {
         accountApi.updateProfile(UpdateProfileRequestDto(firstName, lastName, email, phoneNumber))
-    }.map { it.toDomain() }
+    }.map { it.user.toDomain() }
 
     override suspend fun setAvatar(fileId: String): Result<Unit> = safeApiCall {
         accountApi.setAvatar(SetAvatarRequestDto(fileId))

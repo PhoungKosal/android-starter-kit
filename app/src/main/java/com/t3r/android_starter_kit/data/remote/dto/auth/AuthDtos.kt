@@ -187,3 +187,8 @@ data class MeResponseDto(
     val user: UserDto,
     val rules: List<RuleDto>? = null,
 )
+
+@Serializable
+data class UpdateProfileResponseDto(
+    val user: UserDto,
+)

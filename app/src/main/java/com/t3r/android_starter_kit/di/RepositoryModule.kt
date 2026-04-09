@@ -1,6 +1,7 @@
 package com.t3r.android_starter_kit.di
 
 import com.t3r.android_starter_kit.data.local.DataStoreManager
+import com.t3r.android_starter_kit.data.remote.api.AccountApi
 import com.t3r.android_starter_kit.data.remote.api.AuthApi
 import com.t3r.android_starter_kit.data.remote.api.FilesApi
 import com.t3r.android_starter_kit.data.remote.api.NotificationsApi
@@ -18,7 +19,6 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import okhttp3.OkHttpClient
-import retrofit2.Retrofit
 import javax.inject.Singleton
 
 @Module
@@ -29,11 +29,13 @@ object RepositoryModule {
     @Singleton
     fun provideAuthRepository(
         authApi: AuthApi,
-        @AuthenticatedClient retrofit: Retrofit,
+        accountApi: AccountApi,
+        notificationsApi: NotificationsApi,
         dataStoreManager: DataStoreManager,
     ): AuthRepository = AuthRepositoryImpl(
         authApi,
-        retrofit.create(NotificationsApi::class.java),
+        accountApi,
+        notificationsApi,
         dataStoreManager,
     )
 

@@ -6,6 +6,7 @@ import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFact
 import com.t3r.android_starter_kit.data.local.DataStoreManager
 import com.t3r.android_starter_kit.data.remote.interceptor.ApiResponseUnwrapInterceptor
 import com.t3r.android_starter_kit.data.remote.interceptor.AuthInterceptor
+import com.t3r.android_starter_kit.data.remote.interceptor.TokenAuthenticator
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -58,6 +59,14 @@ object NetworkModule {
 
     @Provides
     @Singleton
+    fun provideTokenAuthenticator(
+        @PublicClient okHttpClient: OkHttpClient,
+        dataStoreManager: DataStoreManager,
+        json: Json,
+    ): TokenAuthenticator = TokenAuthenticator(okHttpClient, dataStoreManager, json)
+
+    @Provides
+    @Singleton
     @PublicClient
     fun providePublicOkHttpClient(
         loggingInterceptor: HttpLoggingInterceptor,
@@ -75,10 +84,12 @@ object NetworkModule {
     fun provideAuthenticatedOkHttpClient(
         loggingInterceptor: HttpLoggingInterceptor,
         authInterceptor: AuthInterceptor,
+        tokenAuthenticator: TokenAuthenticator,
     ): OkHttpClient = OkHttpClient.Builder()
         .addInterceptor(authInterceptor)
         .addInterceptor(loggingInterceptor)
         .addInterceptor(ApiResponseUnwrapInterceptor())
+        .authenticator(tokenAuthenticator)
         .connectTimeout(30, TimeUnit.SECONDS)
         .readTimeout(30, TimeUnit.SECONDS)
         .writeTimeout(30, TimeUnit.SECONDS)

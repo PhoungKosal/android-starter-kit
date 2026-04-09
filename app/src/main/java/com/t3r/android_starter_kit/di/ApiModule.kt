@@ -1,5 +1,6 @@
 package com.t3r.android_starter_kit.di
 
+import com.t3r.android_starter_kit.data.remote.api.AccountApi
 import com.t3r.android_starter_kit.data.remote.api.AuthApi
 import com.t3r.android_starter_kit.data.remote.api.FilesApi
 import com.t3r.android_starter_kit.data.remote.api.NotificationsApi
@@ -20,6 +21,11 @@ object ApiModule {
     @Singleton
     fun provideAuthApi(@PublicClient retrofit: Retrofit): AuthApi =
         retrofit.create(AuthApi::class.java)
+
+    @Provides
+    @Singleton
+    fun provideAccountApi(@AuthenticatedClient retrofit: Retrofit): AccountApi =
+        retrofit.create(AccountApi::class.java)
 
     @Provides
     @Singleton

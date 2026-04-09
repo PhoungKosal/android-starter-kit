@@ -5,6 +5,7 @@ import com.t3r.android_starter_kit.core.result.Result
 import com.t3r.android_starter_kit.core.result.map
 import com.t3r.android_starter_kit.data.local.DataStoreManager
 import com.t3r.android_starter_kit.data.mapper.toDomain
+import com.t3r.android_starter_kit.data.remote.api.AccountApi
 import com.t3r.android_starter_kit.data.remote.api.AuthApi
 import com.t3r.android_starter_kit.data.remote.api.NotificationsApi
 import com.t3r.android_starter_kit.data.remote.dto.auth.*
@@ -17,6 +18,7 @@ import javax.inject.Inject
 
 class AuthRepositoryImpl @Inject constructor(
     private val authApi: AuthApi,
+    private val accountApi: AccountApi,
     private val notificationsApi: NotificationsApi,
     private val dataStore: DataStoreManager,
 ) : AuthRepository {
@@ -119,7 +121,7 @@ class AuthRepositoryImpl @Inject constructor(
         val refreshToken = dataStore.refreshToken.first()
         unregisterFcmDevice()
         val result = safeApiCall {
-            authApi.logout(LogoutRequestDto(refreshToken))
+            accountApi.logout(LogoutRequestDto(refreshToken))
         }
         dataStore.clearSession()
         return result.map { }
@@ -142,85 +144,42 @@ class AuthRepositoryImpl @Inject constructor(
         authApi.resendVerification(ForgotPasswordRequestDto(email))
     }.map { it.message }
 
-    override suspend fun getMe(): Result<User> {
-        val token = dataStore.accessToken.first() ?: return Result.Error(
-            com.t3r.android_starter_kit.core.result.AppError("UNAUTHORIZED", "Not authenticated")
-        )
-        return safeApiCall {
-            authApi.getMe("Bearer $token")
-        }.map { it.user.toDomain() }
-    }
+    override suspend fun getMe(): Result<User> = safeApiCall {
+        accountApi.getMe()
+    }.map { it.user.toDomain() }
 
     override suspend fun updateProfile(
         firstName: String?,
         lastName: String?,
         email: String?,
         phoneNumber: String?,
-    ): Result<User> {
-        val token = dataStore.accessToken.first() ?: return Result.Error(
-            com.t3r.android_starter_kit.core.result.AppError("UNAUTHORIZED", "Not authenticated")
-        )
-        return safeApiCall {
-            authApi.updateProfile(
-                "Bearer $token",
-                UpdateProfileRequestDto(firstName, lastName, email, phoneNumber),
-            )
-        }.map { it.toDomain() }
+    ): Result<User> = safeApiCall {
+        accountApi.updateProfile(UpdateProfileRequestDto(firstName, lastName, email, phoneNumber))
+    }.map { it.toDomain() }
+
+    override suspend fun setAvatar(fileId: String): Result<Unit> = safeApiCall {
+        accountApi.setAvatar(SetAvatarRequestDto(fileId))
+    }.map { }
+
+    override suspend fun deleteAvatar(): Result<Unit> = safeApiCall {
+        accountApi.deleteAvatar()
     }
 
-    override suspend fun setAvatar(fileId: String): Result<Unit> {
-        val token = dataStore.accessToken.first() ?: return Result.Error(
-            com.t3r.android_starter_kit.core.result.AppError("UNAUTHORIZED", "Not authenticated")
-        )
-        return safeApiCall {
-            authApi.setAvatar("Bearer $token", SetAvatarRequestDto(fileId))
-        }.map { }
-    }
+    override suspend fun deleteAccount(password: String): Result<Unit> = safeApiCall {
+        accountApi.deleteAccount(DeleteAccountRequestDto(password))
+    }.map { dataStore.clearSession() }
 
-    override suspend fun deleteAvatar(): Result<Unit> {
-        val token = dataStore.accessToken.first() ?: return Result.Error(
-            com.t3r.android_starter_kit.core.result.AppError("UNAUTHORIZED", "Not authenticated")
-        )
-        return safeApiCall { authApi.deleteAvatar("Bearer $token") }
-    }
+    override suspend fun setup2fa(): Result<TwoFactorSetup> = safeApiCall {
+        accountApi.setup2fa()
+    }.map { it.toDomain() }
 
-    override suspend fun deleteAccount(password: String): Result<Unit> {
-        val token = dataStore.accessToken.first() ?: return Result.Error(
-            com.t3r.android_starter_kit.core.result.AppError("UNAUTHORIZED", "Not authenticated")
-        )
-        return safeApiCall {
-            authApi.deleteAccount("Bearer $token", DeleteAccountRequestDto(password))
-        }.map {
-            dataStore.clearSession()
-        }
-    }
+    override suspend fun enable2fa(code: String): Result<List<String>> = safeApiCall {
+        accountApi.enable2fa(Enable2faRequestDto(code))
+    }.map { it.toDomain() }
 
-    override suspend fun setup2fa(): Result<TwoFactorSetup> {
-        val token = dataStore.accessToken.first() ?: return Result.Error(
-            com.t3r.android_starter_kit.core.result.AppError("UNAUTHORIZED", "Not authenticated")
-        )
-        return safeApiCall {
-            authApi.setup2fa("Bearer $token")
-        }.map { it.toDomain() }
-    }
-
-    override suspend fun enable2fa(code: String): Result<List<String>> {
-        val token = dataStore.accessToken.first() ?: return Result.Error(
-            com.t3r.android_starter_kit.core.result.AppError("UNAUTHORIZED", "Not authenticated")
-        )
-        return safeApiCall {
-            authApi.enable2fa("Bearer $token", Enable2faRequestDto(code))
-        }.map { it.toDomain() }
-    }
-
-    override suspend fun disable2fa(password: String, code: String): Result<String> {
-        val token = dataStore.accessToken.first() ?: return Result.Error(
-            com.t3r.android_starter_kit.core.result.AppError("UNAUTHORIZED", "Not authenticated")
-        )
-        return safeApiCall {
-            authApi.disable2fa("Bearer $token", Disable2faRequestDto(password, code))
-        }.map { it.message }
-    }
+    override suspend fun disable2fa(password: String, code: String): Result<String> = safeApiCall {
+        accountApi.disable2fa(Disable2faRequestDto(password, code))
+    }.map { it.message }
 
     override suspend fun isLoggedIn(): Boolean = dataStore.isLoggedIn.first()
 

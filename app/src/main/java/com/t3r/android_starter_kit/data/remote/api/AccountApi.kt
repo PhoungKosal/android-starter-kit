@@ -41,9 +41,6 @@ interface AccountApi {
     @DELETE("auth/me/avatar")
     suspend fun deleteAvatar()
 
-    @GET("auth/me/files")
-    suspend fun getMyFiles(): List<FileDto>
-
     @HTTP(method = "DELETE", path = "auth/me/account", hasBody = true)
     suspend fun deleteAccount(@Body request: DeleteAccountRequestDto): MessageResponseDto
 

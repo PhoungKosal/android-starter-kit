@@ -2,7 +2,9 @@ package com.t3r.android_starter_kit.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
+import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
@@ -32,7 +34,7 @@ fun AppNavigation(isLoggedIn: Boolean) {
     val startRoute: NavKey = if (isLoggedIn) Route.Home else Route.Login
     val backStack = rememberNavBackStack(startRoute)
 
-    // Navigate to login when session expires (e.g. refresh token invalid)
+    // Navigate to log in when session expires (e.g. refresh token invalid)
     LaunchedEffect(isLoggedIn) {
         if (!isLoggedIn) {
             backStack.removeAll { true }
@@ -42,6 +44,10 @@ fun AppNavigation(isLoggedIn: Boolean) {
 
     NavDisplay(
         backStack = backStack,
+        entryDecorators = listOf(
+            rememberSaveableStateHolderNavEntryDecorator(),
+            rememberViewModelStoreNavEntryDecorator(),
+        ),
         entryProvider = entryProvider {
 
             // -- Auth Flow --

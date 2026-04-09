@@ -34,11 +34,12 @@ fun AppNavigation(isLoggedIn: Boolean) {
     val startRoute: NavKey = if (isLoggedIn) Route.Home else Route.Login
     val backStack = rememberNavBackStack(startRoute)
 
-    // Navigate to log in when session expires (e.g. refresh token invalid)
+    // React to auth state changes (login, logout, session expiry)
     LaunchedEffect(isLoggedIn) {
-        if (!isLoggedIn) {
+        val targetRoute: NavKey = if (isLoggedIn) Route.Home else Route.Login
+        if (backStack.lastOrNull() != targetRoute) {
             backStack.removeAll { true }
-            backStack.add(Route.Login)
+            backStack.add(targetRoute)
         }
     }
 

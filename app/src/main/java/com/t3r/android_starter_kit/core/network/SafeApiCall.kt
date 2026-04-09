@@ -35,7 +35,7 @@ suspend fun <T> safeApiCall(
                 details = errorDto?.details,
             )
         )
-    } catch (e: IOException) {
+    } catch (_: IOException) {
         Result.Error(
             AppError(
                 code = "NETWORK_ERROR",

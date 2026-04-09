@@ -13,7 +13,7 @@ import javax.inject.Singleton
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
-private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "starterkit_prefs")
+private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "starter_prefs")
 
 /**
  * Manages local persistent storage using Jetpack DataStore.

@@ -3,7 +3,6 @@ package com.t3r.android_starter_kit
 import android.app.Application
 import android.app.NotificationChannel
 import android.app.NotificationManager
-import com.t3r.android_starter_kit.BuildConfig
 import com.google.firebase.messaging.FirebaseMessaging
 import com.t3r.android_starter_kit.data.local.DataStoreManager
 import dagger.hilt.android.HiltAndroidApp

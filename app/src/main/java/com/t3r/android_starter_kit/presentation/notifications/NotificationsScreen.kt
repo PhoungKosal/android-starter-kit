@@ -1,22 +1,33 @@
 package com.t3r.android_starter_kit.presentation.notifications
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.DoneAll
+import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.outlined.Notifications
+import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material.icons.outlined.ShieldMoon
+import androidx.compose.material.icons.outlined.Warning
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -39,10 +50,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.t3r.android_starter_kit.domain.model.Notification
+import com.t3r.android_starter_kit.domain.model.NotificationType
 import com.t3r.android_starter_kit.presentation.components.ErrorView
 import com.t3r.android_starter_kit.presentation.components.LoadingView
 
@@ -131,12 +145,14 @@ fun NotificationsScreen(
 
                         if (state.isLoadingMore) {
                             item {
-                                CircularProgressIndicator(
+                                Box(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .padding(16.dp)
-                                        .size(24.dp),
-                                )
+                                        .padding(16.dp),
+                                    contentAlignment = Alignment.Center,
+                                ) {
+                                    CircularProgressIndicator(modifier = Modifier.size(24.dp))
+                                }
                             }
                         }
                     }
@@ -201,37 +217,97 @@ private fun NotificationItem(
                 },
             ),
         ) {
-            Column(
+            Row(
                 modifier = Modifier.padding(16.dp),
+                verticalAlignment = Alignment.Top,
             ) {
-                notification.title?.let {
-                    Text(
-                        text = it,
-                        style = MaterialTheme.typography.titleSmall,
-                        fontWeight = if (notification.isRead) FontWeight.Normal else FontWeight.Bold,
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                }
-
-                notification.message?.let {
-                    Text(
-                        text = it,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                // Type-based icon — mirrors frontend notification.config.ts
+                Box(
+                    modifier = Modifier
+                        .size(36.dp)
+                        .padding(top = 2.dp),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Icon(
+                        imageVector = notificationIcon(notification.key, notification.type),
+                        contentDescription = null,
+                        modifier = Modifier.size(22.dp),
+                        tint = notificationIconTint(notification.type),
                     )
                 }
 
-                notification.createdAt?.let {
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = it,
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.outline,
+                Spacer(modifier = Modifier.width(12.dp))
+
+                Column(modifier = Modifier.weight(1f)) {
+                    notification.title?.let {
+                        Text(
+                            text = it,
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = if (notification.isRead) FontWeight.Normal else FontWeight.Bold,
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                    }
+
+                    notification.message?.let {
+                        Text(
+                            text = it,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+
+                    notification.createdAt?.let {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = it,
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.outline,
+                        )
+                    }
+                }
+
+                // Unread dot indicator
+                if (!notification.isRead) {
+                    Box(
+                        modifier = Modifier
+                            .padding(top = 6.dp)
+                            .size(8.dp)
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.primary),
                     )
                 }
             }
         }
     }
+}
+
+/** Map notification key / type to an icon — mirrors frontend `notification.config.ts`. */
+private fun notificationIcon(
+    key: String?,
+    type: NotificationType,
+): ImageVector = when (key) {
+    "twoFA.enabled" -> Icons.Outlined.ShieldMoon
+    "twoFA.disabled" -> Icons.Outlined.ShieldMoon
+    "account.activated" -> Icons.Outlined.Person
+    "security.alert" -> Icons.Outlined.Warning
+    "password.changed" -> Icons.Outlined.Lock
+    else -> when (type) {
+        NotificationType.SUCCESS -> Icons.Outlined.CheckCircle
+        NotificationType.WARNING -> Icons.Outlined.Warning
+        NotificationType.ERROR -> Icons.Outlined.Warning
+        NotificationType.INFO -> Icons.Outlined.Info
+        NotificationType.GENERAL -> Icons.Outlined.Notifications
+    }
+}
+
+/** Color the icon based on notification type. */
+@Composable
+private fun notificationIconTint(type: NotificationType) = when (type) {
+    NotificationType.SUCCESS -> MaterialTheme.colorScheme.primary
+    NotificationType.WARNING -> MaterialTheme.colorScheme.error
+    NotificationType.ERROR -> MaterialTheme.colorScheme.error
+    NotificationType.INFO -> MaterialTheme.colorScheme.tertiary
+    NotificationType.GENERAL -> MaterialTheme.colorScheme.onSurfaceVariant
 }
 
 @Composable

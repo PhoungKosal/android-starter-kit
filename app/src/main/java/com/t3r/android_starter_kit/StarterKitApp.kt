@@ -1,14 +1,15 @@
 package com.t3r.android_starter_kit
 
 import android.app.Application
-import android.app.NotificationChannel
-import android.app.NotificationManager
 import com.google.firebase.messaging.FirebaseMessaging
 import com.t3r.android_starter_kit.data.local.DataStoreManager
+import com.t3r.android_starter_kit.data.remote.fcm.NotificationChannels
+import com.t3r.android_starter_kit.domain.repository.NotificationsRepository
 import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
@@ -19,6 +20,9 @@ class StarterKitApp : Application() {
     @Inject
     lateinit var dataStoreManager: DataStoreManager
 
+    @Inject
+    lateinit var notificationsRepository: NotificationsRepository
+
     private val appScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     override fun onCreate() {
@@ -28,29 +32,27 @@ class StarterKitApp : Application() {
             Timber.plant(Timber.DebugTree())
         }
 
-        createNotificationChannel()
+        NotificationChannels.createAll(this)
 
-        FirebaseMessaging.getInstance().token.addOnSuccessListener { token ->
-            Timber.d("FCM Token: $token")
-            appScope.launch {
-                dataStoreManager.saveFcmToken(token)
+        FirebaseMessaging.getInstance().token
+            .addOnSuccessListener { token ->
+                Timber.d("FCM Token: $token")
+                appScope.launch {
+                    dataStoreManager.saveFcmToken(token)
+                    try {
+                        val isLoggedIn = dataStoreManager.isLoggedIn.first()
+                        if (isLoggedIn) {
+                            notificationsRepository.registerDevice(token, appVersion = null)
+                        } else {
+                            notificationsRepository.registerAnonymousDevice(token, appVersion = null)
+                        }
+                    } catch (e: Exception) {
+                        Timber.e(e, "Failed to register FCM token on startup")
+                    }
+                }
             }
-        }
-    }
-
-    private fun createNotificationChannel() {
-        val channel = NotificationChannel(
-            NOTIFICATION_CHANNEL_ID,
-            "General Notifications",
-            NotificationManager.IMPORTANCE_DEFAULT,
-        ).apply {
-            description = "App notifications"
-        }
-        val manager = getSystemService(NotificationManager::class.java)
-        manager.createNotificationChannel(channel)
-    }
-
-    companion object {
-        const val NOTIFICATION_CHANNEL_ID = "starterkit_notifications"
+            .addOnFailureListener { e ->
+                Timber.e(e, "Failed to retrieve FCM token")
+            }
     }
 }

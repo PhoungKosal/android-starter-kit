@@ -17,12 +17,13 @@ class NotificationsRepositoryImpl @Inject constructor(
 
     override suspend fun getNotifications(page: Int, limit: Int): Result<PaginatedData<Notification>> =
         safeApiCall {
-            notificationsApi.getNotifications(page, limit)
+            val offset = (page - 1) * limit
+            notificationsApi.getNotifications(offset, limit)
         }.map { list ->
             PaginatedData(
                 data = list.map { it.toDomain() },
                 currentPage = page,
-                totalPages = 1,
+                totalPages = if (list.size >= limit) page + 1 else page,
                 totalItems = list.size,
                 itemsPerPage = limit,
             )

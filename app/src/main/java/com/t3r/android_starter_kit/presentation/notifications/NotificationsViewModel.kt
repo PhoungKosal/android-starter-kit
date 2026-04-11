@@ -29,7 +29,7 @@ class NotificationsViewModel @Inject constructor(
         when (event) {
             NotificationsEvent.Load -> load()
             NotificationsEvent.LoadMore -> loadMore()
-            NotificationsEvent.Refresh -> refresh()
+            NotificationsEvent.Refresh -> load()
             is NotificationsEvent.MarkAsRead -> markAsRead(event.id)
             NotificationsEvent.MarkAllAsRead -> markAllAsRead()
             is NotificationsEvent.Delete -> delete(event.id)
@@ -76,27 +76,6 @@ class NotificationsViewModel @Inject constructor(
                 }
                 .onError {
                     _state.update { it.copy(isLoadingMore = false) }
-                }
-        }
-    }
-
-    private fun refresh() {
-        viewModelScope.launch {
-            _state.update { it.copy(isLoading = true) }
-            notificationsRepository.getNotifications(page = 1)
-                .onSuccess { paginated ->
-                    _state.update {
-                        it.copy(
-                            notifications = paginated.data,
-                            currentPage = paginated.currentPage,
-                            hasMore = paginated.hasMore,
-                            isLoading = false,
-                            error = null,
-                        )
-                    }
-                }
-                .onError { error ->
-                    _state.update { it.copy(isLoading = false, error = error) }
                 }
         }
     }

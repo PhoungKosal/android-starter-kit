@@ -16,7 +16,7 @@ interface NotificationsApi {
 
     @GET("notifications")
     suspend fun getNotifications(
-        @Query("page") page: Int = 1,
+        @Query("offset") offset: Int = 0,
         @Query("limit") limit: Int = 20,
     ): List<NotificationDto>
 

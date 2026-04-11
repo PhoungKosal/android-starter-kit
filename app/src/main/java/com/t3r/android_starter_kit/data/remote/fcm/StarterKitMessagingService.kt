@@ -68,7 +68,7 @@ class StarterKitMessagingService : FirebaseMessagingService() {
         try {
             NotificationManagerCompat.from(this)
                 .notify(System.currentTimeMillis().toInt(), notification)
-        } catch (e: SecurityException) {
+        } catch (_: SecurityException) {
             Timber.w("Notification permission not granted")
         }
     }

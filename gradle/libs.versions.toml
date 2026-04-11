@@ -28,7 +28,7 @@ retrofit-kotlinx-serialization = "1.0.0"
 coil = "3.4.0"
 
 # Firebase
-firebase-bom = "34.11.0"
+firebase-bom = "34.12.0"
 
 # Testing
 junit = "4.13.2"

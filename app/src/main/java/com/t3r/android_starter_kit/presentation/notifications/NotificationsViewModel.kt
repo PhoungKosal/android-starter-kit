@@ -82,12 +82,32 @@ class NotificationsViewModel @Inject constructor(
 
     private fun markAsRead(id: String) {
         viewModelScope.launch {
+            // Optimistic update — reflect the change instantly in the UI
+            _state.update { state ->
+                state.copy(
+                    notifications = state.notifications.map {
+                        if (it.id == id) it.copy(isRead = true) else it
+                    }
+                )
+            }
+
             notificationsRepository.markAsRead(id)
                 .onSuccess { updatedNotification ->
+                    // Replace with the server-authoritative version
                     _state.update { state ->
                         state.copy(
                             notifications = state.notifications.map {
                                 if (it.id == id) updatedNotification else it
+                            }
+                        )
+                    }
+                }
+                .onError {
+                    // Revert the optimistic update on failure
+                    _state.update { state ->
+                        state.copy(
+                            notifications = state.notifications.map {
+                                if (it.id == id) it.copy(isRead = false) else it
                             }
                         )
                     }

@@ -29,10 +29,6 @@ class NotificationsRepositoryImpl @Inject constructor(
             )
         }
 
-    override suspend fun getUnreadNotifications(): Result<List<Notification>> = safeApiCall {
-        notificationsApi.getUnreadNotifications()
-    }.map { list -> list.map { it.toDomain() } }
-
     override suspend fun getUnreadCount(): Result<Int> = safeApiCall {
         notificationsApi.getUnreadCount()
     }.map { it.count }

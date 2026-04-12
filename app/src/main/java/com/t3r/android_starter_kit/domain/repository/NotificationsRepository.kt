@@ -8,8 +8,6 @@ interface NotificationsRepository {
 
     suspend fun getNotifications(page: Int = 1, limit: Int = 20): Result<PaginatedData<Notification>>
 
-    suspend fun getUnreadNotifications(): Result<List<Notification>>
-
     suspend fun getUnreadCount(): Result<Int>
 
     suspend fun markAsRead(id: String): Result<Notification>

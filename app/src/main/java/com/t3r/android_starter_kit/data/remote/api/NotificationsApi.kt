@@ -20,9 +20,6 @@ interface NotificationsApi {
         @Query("limit") limit: Int = 20,
     ): List<NotificationDto>
 
-    @GET("notifications/unread")
-    suspend fun getUnreadNotifications(): List<NotificationDto>
-
     @GET("notifications/unread/count")
     suspend fun getUnreadCount(): UnreadCountDto
 

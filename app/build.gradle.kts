@@ -100,6 +100,9 @@ dependencies {
     // Logging
     implementation(libs.timber)
 
+    // Socket.IO
+    implementation(libs.socket.io.client)
+
     // Testing
     testImplementation(libs.junit)
     testImplementation(libs.mockk)

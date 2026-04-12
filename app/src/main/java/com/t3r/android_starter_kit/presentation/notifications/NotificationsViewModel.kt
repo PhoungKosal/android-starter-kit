@@ -4,6 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.t3r.android_starter_kit.core.result.onError
 import com.t3r.android_starter_kit.core.result.onSuccess
+import com.t3r.android_starter_kit.data.remote.socket.NotificationSocketEvent
+import com.t3r.android_starter_kit.data.remote.socket.NotificationSocketManager
 import com.t3r.android_starter_kit.domain.repository.NotificationsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -16,6 +18,7 @@ import javax.inject.Inject
 @HiltViewModel
 class NotificationsViewModel @Inject constructor(
     private val notificationsRepository: NotificationsRepository,
+    private val socketManager: NotificationSocketManager,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(NotificationsState())
@@ -23,6 +26,7 @@ class NotificationsViewModel @Inject constructor(
 
     init {
         load()
+        observeSocketEvents()
     }
 
     fun onEvent(event: NotificationsEvent) {
@@ -33,6 +37,43 @@ class NotificationsViewModel @Inject constructor(
             is NotificationsEvent.MarkAsRead -> markAsRead(event.id)
             NotificationsEvent.MarkAllAsRead -> markAllAsRead()
             is NotificationsEvent.Delete -> delete(event.id)
+        }
+    }
+
+    private fun observeSocketEvents() {
+        viewModelScope.launch {
+            socketManager.events.collect { event ->
+                when (event) {
+                    is NotificationSocketEvent.NewNotification -> load()
+                    is NotificationSocketEvent.Read -> {
+                        event.notificationId?.let { id ->
+                            _state.update { state ->
+                                state.copy(
+                                    notifications = state.notifications.map {
+                                        if (it.id == id) it.copy(isRead = true) else it
+                                    },
+                                )
+                            }
+                        }
+                    }
+                    is NotificationSocketEvent.ReadAll -> {
+                        _state.update { state ->
+                            state.copy(
+                                notifications = state.notifications.map { it.copy(isRead = true) },
+                            )
+                        }
+                    }
+                    is NotificationSocketEvent.Removed -> {
+                        event.notificationId?.let { id ->
+                            _state.update { state ->
+                                state.copy(
+                                    notifications = state.notifications.filter { it.id != id },
+                                )
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 

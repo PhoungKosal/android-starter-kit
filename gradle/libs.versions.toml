@@ -49,6 +49,7 @@ security-crypto = "1.1.0"
 # Other
 timber = "5.0.1"
 splashscreen = "1.2.0"
+socket-io = "2.1.2"
 
 [libraries]
 # AndroidX Core
@@ -104,6 +105,9 @@ androidx-security-crypto = { group = "androidx.security", name = "security-crypt
 
 # Logging
 timber = { group = "com.jakewharton.timber", name = "timber", version.ref = "timber" }
+
+# Socket.IO
+socket-io-client = { group = "io.socket", name = "socket.io-client", version.ref = "socket-io" }
 
 # Testing
 junit = { group = "junit", name = "junit", version.ref = "junit" }

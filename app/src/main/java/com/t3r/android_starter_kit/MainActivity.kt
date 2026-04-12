@@ -18,6 +18,7 @@ import androidx.lifecycle.lifecycleScope
 import com.google.firebase.messaging.FirebaseMessaging
 import com.t3r.android_starter_kit.data.local.DataStoreManager
 import com.t3r.android_starter_kit.data.remote.fcm.NotificationBuilder
+import com.t3r.android_starter_kit.data.remote.socket.NotificationSocketManager
 import com.t3r.android_starter_kit.domain.repository.NotificationsRepository
 import com.t3r.android_starter_kit.navigation.AppNavigation
 import com.t3r.android_starter_kit.presentation.theme.AndroidstarterkitTheme
@@ -38,6 +39,9 @@ class MainActivity : ComponentActivity() {
 
     @Inject
     lateinit var notificationsRepository: NotificationsRepository
+
+    @Inject
+    lateinit var notificationSocketManager: NotificationSocketManager
 
     private var isReady by mutableStateOf(false)
     private var isLoggedIn by mutableStateOf(false)
@@ -89,6 +93,10 @@ class MainActivity : ComponentActivity() {
                 // failed (e.g. FCM token not yet available).
                 if (loggedIn && !wasLoggedIn) {
                     linkDeviceTokenToUser()
+                    notificationSocketManager.connect()
+                }
+                if (!loggedIn && wasLoggedIn) {
+                    notificationSocketManager.disconnect()
                 }
                 wasLoggedIn = loggedIn
             }
@@ -115,6 +123,16 @@ class MainActivity : ComponentActivity() {
         super.onSaveInstanceState(outState)
         outState.putBoolean(KEY_PENDING_NOTIFICATION, pendingNotificationRoute)
         outState.putString(KEY_PENDING_DEEP_LINK, pendingDeepLink)
+    }
+
+    override fun onStart() {
+        super.onStart()
+        if (isLoggedIn) notificationSocketManager.connect()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        notificationSocketManager.disconnect()
     }
 
     override fun onNewIntent(intent: Intent) {

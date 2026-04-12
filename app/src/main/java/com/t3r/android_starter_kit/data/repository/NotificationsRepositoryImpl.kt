@@ -24,7 +24,7 @@ class NotificationsRepositoryImpl @Inject constructor(
                 data = list.map { it.toDomain() },
                 currentPage = page,
                 totalPages = if (list.size >= limit) page + 1 else page,
-                totalItems = list.size,
+                totalItems = -1, // Unknown without backend total count header
                 itemsPerPage = limit,
             )
         }

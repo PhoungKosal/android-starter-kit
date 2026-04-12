@@ -17,15 +17,15 @@ private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(na
 
 /**
  * Manages local persistent storage using Jetpack DataStore.
- * Stores auth tokens, user preferences, and session data.
+ * Stores user preferences and session flags. Auth tokens are delegated
+ * to [SecureTokenStore] (EncryptedSharedPreferences) for at-rest encryption.
  */
 @Singleton
 class DataStoreManager @Inject constructor(
     @ApplicationContext private val context: Context,
+    private val secureTokenStore: SecureTokenStore,
 ) {
     private object Keys {
-        val ACCESS_TOKEN = stringPreferencesKey("access_token")
-        val REFRESH_TOKEN = stringPreferencesKey("refresh_token")
         val USER_ID = stringPreferencesKey("user_id")
         val IS_LOGGED_IN = booleanPreferencesKey("is_logged_in")
         val THEME = stringPreferencesKey("theme")
@@ -33,17 +33,17 @@ class DataStoreManager @Inject constructor(
         val FCM_TOKEN = stringPreferencesKey("fcm_token")
     }
 
-    // -- Auth Tokens --
+    // -- Auth Tokens (encrypted via SecureTokenStore) --
 
-    val accessToken: Flow<String?> = context.dataStore.data.map { it[Keys.ACCESS_TOKEN] }
-    val refreshToken: Flow<String?> = context.dataStore.data.map { it[Keys.REFRESH_TOKEN] }
+    val accessToken: Flow<String?> = context.dataStore.data.map { secureTokenStore.accessToken }
+    val refreshToken: Flow<String?> = context.dataStore.data.map { secureTokenStore.refreshToken }
     val isLoggedIn: Flow<Boolean> = context.dataStore.data.map { it[Keys.IS_LOGGED_IN] ?: false }
     val userId: Flow<String?> = context.dataStore.data.map { it[Keys.USER_ID] }
 
     suspend fun saveTokens(accessToken: String, refreshToken: String) {
+        secureTokenStore.accessToken = accessToken
+        secureTokenStore.refreshToken = refreshToken
         context.dataStore.edit { prefs ->
-            prefs[Keys.ACCESS_TOKEN] = accessToken
-            prefs[Keys.REFRESH_TOKEN] = refreshToken
             prefs[Keys.IS_LOGGED_IN] = true
         }
     }
@@ -53,9 +53,8 @@ class DataStoreManager @Inject constructor(
     }
 
     suspend fun clearSession() {
+        secureTokenStore.clearTokens()
         context.dataStore.edit { prefs ->
-            prefs.remove(Keys.ACCESS_TOKEN)
-            prefs.remove(Keys.REFRESH_TOKEN)
             prefs.remove(Keys.USER_ID)
             prefs[Keys.IS_LOGGED_IN] = false
         }

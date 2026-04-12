@@ -133,7 +133,11 @@ object NotificationBuilder {
 
     /** Download a bitmap from a URL on the current thread (called from IO dispatcher). */
     private fun downloadBitmap(url: String): Bitmap? = try {
-        URL(url).openStream().use { BitmapFactory.decodeStream(it) }
+        val connection = URL(url).openConnection().apply {
+            connectTimeout = 5_000
+            readTimeout = 5_000
+        }
+        connection.getInputStream().use { BitmapFactory.decodeStream(it) }
     } catch (e: Exception) {
         Timber.w(e, "Failed to download notification image: $url")
         null

@@ -30,7 +30,12 @@ import com.t3r.android_starter_kit.presentation.settings.TwoFactorScreen as TwoF
 import com.t3r.android_starter_kit.presentation.settings.TwoFactorViewModel
 
 @Composable
-fun AppNavigation(isLoggedIn: Boolean) {
+fun AppNavigation(
+    isLoggedIn: Boolean,
+    openNotifications: Boolean = false,
+    pendingDeepLink: String? = null,
+    onNotificationsOpened: () -> Unit = {},
+) {
     val startRoute: NavKey = if (isLoggedIn) Route.Home else Route.Login
     val backStack = rememberNavBackStack(startRoute)
 
@@ -40,6 +45,20 @@ fun AppNavigation(isLoggedIn: Boolean) {
         if (backStack.lastOrNull() != targetRoute) {
             backStack.removeAll { true }
             backStack.add(targetRoute)
+        }
+    }
+
+    // Navigate to Notifications when the user taps a push notification.
+    // Key on BOTH values so it re-fires when isLoggedIn becomes true after cold start.
+    LaunchedEffect(openNotifications, isLoggedIn) {
+        if (openNotifications && isLoggedIn) {
+            // Ensure Home is the base, then push Notifications on top
+            if (backStack.lastOrNull() != Route.Notifications) {
+                backStack.removeAll { true }
+                backStack.add(Route.Home)
+                backStack.add(Route.Notifications)
+            }
+            onNotificationsOpened()
         }
     }
 

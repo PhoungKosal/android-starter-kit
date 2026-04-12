@@ -4,28 +4,15 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import androidx.core.app.NotificationManagerCompat
-import com.t3r.android_starter_kit.data.remote.api.NotificationsApi
-import com.t3r.android_starter_kit.data.remote.dto.notifications.NotificationActionRequestDto
-import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.launch
 import timber.log.Timber
-import javax.inject.Inject
 
 /**
  * Handles notification action button taps (e.g. "Mark as Read", "Dismiss").
  *
- * Cancels the notification from the shade and forwards the action
- * to the backend via `POST /notifications/action`.
+ * Cancels the notification from the shade and enqueues the action
+ * via [NotificationActionWorker] for reliable delivery to the backend.
  */
-@AndroidEntryPoint
 class NotificationActionReceiver : BroadcastReceiver() {
-
-    @Inject lateinit var notificationsApi: NotificationsApi
-
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     override fun onReceive(context: Context, intent: Intent) {
         val action = intent.getStringExtra(EXTRA_ACTION) ?: return
@@ -35,31 +22,14 @@ class NotificationActionReceiver : BroadcastReceiver() {
         Timber.d("Notification action received: action=$action, notificationId=$notificationId")
 
         // Dismiss the notification from the shade
-        if (notifyId >= 0) {
-            try {
-                NotificationManagerCompat.from(context).cancel(notifyId)
-            } catch (_: SecurityException) {
-                Timber.w("Cannot cancel notification — permission not granted")
-            }
+        try {
+            NotificationManagerCompat.from(context).cancel(notifyId)
+        } catch (_: SecurityException) {
+            Timber.w("Cannot cancel notification — permission not granted")
         }
 
-        // Fire-and-forget call to backend
-        val pendingResult = goAsync()
-        scope.launch {
-            try {
-                notificationsApi.handleAction(
-                    NotificationActionRequestDto(
-                        notificationId = notificationId,
-                        action = action,
-                    ),
-                )
-                Timber.d("Action '$action' sent to backend successfully")
-            } catch (e: Exception) {
-                Timber.e(e, "Failed to send action '$action' to backend")
-            } finally {
-                pendingResult.finish()
-            }
-        }
+        // Reliable delivery via WorkManager (survives process death, retries on failure)
+        NotificationActionWorker.enqueue(context, notificationId, action)
     }
 
     companion object {

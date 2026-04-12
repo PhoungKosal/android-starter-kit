@@ -25,7 +25,7 @@ class ApiResponseUnwrapInterceptor : Interceptor {
             val json = JSONObject(rawBody)
             if (json.has("data") && json.has("success")) {
                 val data = json.get("data")
-                data.toString()
+                if (data == null || data == org.json.JSONObject.NULL) "{}" else data.toString()
             } else {
                 rawBody
             }

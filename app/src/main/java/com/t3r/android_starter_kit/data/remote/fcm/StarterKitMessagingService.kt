@@ -4,14 +4,15 @@ import androidx.core.app.NotificationManagerCompat
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import com.t3r.android_starter_kit.data.local.DataStoreManager
-import com.t3r.android_starter_kit.domain.repository.NotificationsRepository
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import timber.log.Timber
+import java.util.concurrent.atomic.AtomicInteger
 import javax.inject.Inject
 
 /**
@@ -25,22 +26,23 @@ import javax.inject.Inject
 class StarterKitMessagingService : FirebaseMessagingService() {
 
     @Inject lateinit var dataStoreManager: DataStoreManager
-    @Inject lateinit var notificationsRepository: NotificationsRepository
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+
+    override fun onDestroy() {
+        super.onDestroy()
+        scope.cancel()
+    }
 
     override fun onNewToken(token: String) {
         Timber.d("FCM token refreshed")
         scope.launch {
             try {
                 dataStoreManager.saveFcmToken(token)
-                if (dataStoreManager.isLoggedIn.first()) {
-                    notificationsRepository.registerDevice(token, appVersion = null)
-                } else {
-                    notificationsRepository.registerAnonymousDevice(token, appVersion = null)
-                }
+                val isLoggedIn = dataStoreManager.isLoggedIn.first()
+                DeviceTokenSyncWorker.enqueue(applicationContext, token, isLoggedIn)
             } catch (e: Exception) {
-                Timber.e(e, "Failed to register refreshed FCM token")
+                Timber.e(e, "Failed to save/enqueue refreshed FCM token")
             }
         }
     }
@@ -59,7 +61,12 @@ class StarterKitMessagingService : FirebaseMessagingService() {
                 ?: data["message"]
                 ?: ""
 
-            val notifyId = System.currentTimeMillis().toInt()
+            // Use backend notificationId as the Android notification ID when available.
+            // This deduplicates: the same backend notification always maps to the same
+            // Android ID, replacing rather than duplicating in the shade.
+            val backendId = data["notificationId"]
+            val notifyId = backendId?.hashCode()?.and(0x7FFFFFFF)
+                ?: (idCounter.incrementAndGet() and 0x7FFFFFFF)
 
             val notification = NotificationBuilder.build(
                 context = this,
@@ -67,7 +74,7 @@ class StarterKitMessagingService : FirebaseMessagingService() {
                 body = body,
                 channelId = data["_channelId"],
                 imageUrl = data["_imageUrl"],
-                notificationId = data["notificationId"],
+                notificationId = backendId,
                 actions = data["actions"],
                 deepLink = data["deepLink"],
                 notifyId = notifyId,
@@ -84,5 +91,10 @@ class StarterKitMessagingService : FirebaseMessagingService() {
         } catch (e: Exception) {
             Timber.e(e, "Failed to process FCM message")
         }
+    }
+
+    private companion object {
+        /** Monotonically increasing counter for unique notification IDs. */
+        val idCounter = AtomicInteger(0)
     }
 }

@@ -1,10 +1,12 @@
 package com.t3r.android_starter_kit
 
 import android.app.Application
+import androidx.hilt.work.HiltWorkerFactory
+import androidx.work.Configuration
 import com.google.firebase.messaging.FirebaseMessaging
 import com.t3r.android_starter_kit.data.local.DataStoreManager
+import com.t3r.android_starter_kit.data.remote.fcm.DeviceTokenSyncWorker
 import com.t3r.android_starter_kit.data.remote.fcm.NotificationChannels
-import com.t3r.android_starter_kit.domain.repository.NotificationsRepository
 import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -15,15 +17,20 @@ import timber.log.Timber
 import javax.inject.Inject
 
 @HiltAndroidApp
-class StarterKitApp : Application() {
+class StarterKitApp : Application(), Configuration.Provider {
 
     @Inject
     lateinit var dataStoreManager: DataStoreManager
 
     @Inject
-    lateinit var notificationsRepository: NotificationsRepository
+    lateinit var workerFactory: HiltWorkerFactory
 
     private val appScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+
+    override val workManagerConfiguration: Configuration
+        get() = Configuration.Builder()
+            .setWorkerFactory(workerFactory)
+            .build()
 
     override fun onCreate() {
         super.onCreate()
@@ -34,21 +41,17 @@ class StarterKitApp : Application() {
 
         NotificationChannels.createAll(this)
 
+        // Save the FCM token locally and enqueue a WorkManager job for reliable
+        // backend registration (with retry). This is the single startup registration
+        // path — onNewToken handles subsequent refreshes, and linkDeviceTokenToUser
+        // in MainActivity handles the logged-out → logged-in transition.
         FirebaseMessaging.getInstance().token
             .addOnSuccessListener { token ->
-                Timber.d("FCM Token: $token")
+                Timber.d("FCM token retrieved")
                 appScope.launch {
                     dataStoreManager.saveFcmToken(token)
-                    try {
-                        val isLoggedIn = dataStoreManager.isLoggedIn.first()
-                        if (isLoggedIn) {
-                            notificationsRepository.registerDevice(token, appVersion = null)
-                        } else {
-                            notificationsRepository.registerAnonymousDevice(token, appVersion = null)
-                        }
-                    } catch (e: Exception) {
-                        Timber.e(e, "Failed to register FCM token on startup")
-                    }
+                    val isLoggedIn = dataStoreManager.isLoggedIn.first()
+                    DeviceTokenSyncWorker.enqueue(this@StarterKitApp, token, isLoggedIn)
                 }
             }
             .addOnFailureListener { e ->

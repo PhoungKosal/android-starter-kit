@@ -48,6 +48,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -59,6 +60,10 @@ import com.t3r.android_starter_kit.domain.model.Notification
 import com.t3r.android_starter_kit.domain.model.NotificationType
 import com.t3r.android_starter_kit.presentation.components.ErrorView
 import com.t3r.android_starter_kit.presentation.components.LoadingView
+import java.time.Duration
+import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
+import java.time.format.DateTimeParseException
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -77,10 +82,15 @@ fun NotificationsScreen(
         }
     }
 
-    LaunchedEffect(shouldLoadMore) {
-        if (shouldLoadMore && state.hasMore && !state.isLoadingMore) {
-            viewModel.onEvent(NotificationsEvent.LoadMore)
-        }
+    // Trigger load more when near end of list.
+    // Uses snapshotFlow so it re-fires even when shouldLoadMore stays true after a failed load.
+    LaunchedEffect(Unit) {
+        snapshotFlow { Triple(shouldLoadMore, state.hasMore, state.isLoadingMore) }
+            .collect { (shouldLoad, hasMore, isLoadingMore) ->
+                if (shouldLoad && hasMore && !isLoadingMore) {
+                    viewModel.onEvent(NotificationsEvent.LoadMore)
+                }
+            }
     }
 
     Scaffold(
@@ -259,7 +269,7 @@ private fun NotificationItem(
                     notification.createdAt?.let {
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = it,
+                            text = formatRelativeTime(it),
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.outline,
                         )
@@ -337,5 +347,27 @@ private fun EmptyNotifications(modifier: Modifier = Modifier) {
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
         )
+    }
+}
+
+/** Format an ISO-8601 timestamp as a human-readable relative time string. */
+private fun formatRelativeTime(isoTimestamp: String): String {
+    return try {
+        val parsed = ZonedDateTime.parse(isoTimestamp, DateTimeFormatter.ISO_DATE_TIME)
+        val now = ZonedDateTime.now()
+        val duration = Duration.between(parsed, now)
+        val minutes = duration.toMinutes()
+        val hours = duration.toHours()
+        val days = duration.toDays()
+
+        when {
+            minutes < 1 -> "Just now"
+            minutes < 60 -> "${minutes}m ago"
+            hours < 24 -> "${hours}h ago"
+            days < 7 -> "${days}d ago"
+            else -> parsed.format(DateTimeFormatter.ofPattern("MMM d, yyyy"))
+        }
+    } catch (_: DateTimeParseException) {
+        isoTimestamp // Fall back to raw string if parsing fails
     }
 }

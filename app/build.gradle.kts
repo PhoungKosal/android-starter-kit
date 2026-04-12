@@ -97,6 +97,14 @@ dependencies {
     implementation(libs.firebase.messaging)
     implementation(libs.firebase.analytics)
 
+    // WorkManager
+    implementation(libs.androidx.work.runtime)
+    implementation(libs.androidx.hilt.work)
+    ksp(libs.androidx.hilt.compiler)
+
+    // Security
+    implementation(libs.androidx.security.crypto)
+
     // Logging
     implementation(libs.timber)
 

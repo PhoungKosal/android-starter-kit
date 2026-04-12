@@ -40,12 +40,19 @@ import com.t3r.android_starter_kit.presentation.components.LoadingButton
 @Composable
 fun TwoFactorScreen(
     viewModel: AuthViewModel,
+    challengeToken: String,
     onNavigateBack: () -> Unit,
     onNavigateToHome: () -> Unit,
 ) {
     val state by viewModel.state.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
     val focusManager = LocalFocusManager.current
+
+    LaunchedEffect(challengeToken) {
+        if (challengeToken.isNotBlank()) {
+            viewModel.onEvent(AuthEvent.SetChallengeToken(challengeToken))
+        }
+    }
 
     LaunchedEffect(Unit) {
         viewModel.navigation.collect { event ->

@@ -63,7 +63,7 @@ fun AppNavigation(isLoggedIn: Boolean) {
                         backStack.removeAll { true }
                         backStack.add(Route.Home)
                     },
-                    onNavigateToTwoFactor = { backStack.add(Route.TwoFactor) },
+                    onNavigateToTwoFactor = { challengeToken -> backStack.add(Route.TwoFactor(challengeToken)) },
                 )
             }
 
@@ -90,10 +90,11 @@ fun AppNavigation(isLoggedIn: Boolean) {
                 )
             }
 
-            entry<Route.TwoFactor> {
+            entry<Route.TwoFactor> { route ->
                 val viewModel: AuthViewModel = hiltViewModel()
                 TwoFactorScreen(
                     viewModel = viewModel,
+                    challengeToken = route.challengeToken,
                     onNavigateBack = { backStack.removeLastOrNull() },
                     onNavigateToHome = {
                         backStack.removeAll { true }

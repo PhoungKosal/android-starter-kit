@@ -19,7 +19,7 @@ import javax.inject.Inject
 
 sealed interface AuthNavigationEvent {
     data object NavigateToHome : AuthNavigationEvent
-    data object NavigateToTwoFactor : AuthNavigationEvent
+    data class NavigateToTwoFactor(val challengeToken: String) : AuthNavigationEvent
     data object NavigateToVerifyEmail : AuthNavigationEvent
 }
 
@@ -49,6 +49,7 @@ class AuthViewModel @Inject constructor(
             is AuthEvent.UpdateLastName -> _state.update { it.copy(lastName = event.value) }
 
             // 2FA
+            is AuthEvent.SetChallengeToken -> _state.update { it.copy(challengeToken = event.value) }
             is AuthEvent.UpdateTwoFactorCode -> _state.update { it.copy(twoFactorCode = event.value) }
 
             // Forgot password
@@ -87,7 +88,7 @@ class AuthViewModel @Inject constructor(
                                     challengeToken = result.challengeToken,
                                 )
                             }
-                            _navigation.emit(AuthNavigationEvent.NavigateToTwoFactor)
+                            _navigation.emit(AuthNavigationEvent.NavigateToTwoFactor(result.challengeToken))
                         }
                     }
                 }

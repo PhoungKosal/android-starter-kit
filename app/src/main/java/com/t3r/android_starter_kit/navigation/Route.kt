@@ -9,7 +9,7 @@ sealed interface Route : NavKey {
     @Serializable data object Login : Route
     @Serializable data object Register : Route
     @Serializable data object ForgotPassword : Route
-    @Serializable data object TwoFactor : Route
+    @Serializable data class TwoFactor(val challengeToken: String = "") : Route
     @Serializable data class VerifyEmail(val email: String = "") : Route
     @Serializable data class ResetPassword(val token: String = "") : Route
 

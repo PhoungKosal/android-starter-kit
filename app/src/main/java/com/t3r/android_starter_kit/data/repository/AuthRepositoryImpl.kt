@@ -1,5 +1,6 @@
 package com.t3r.android_starter_kit.data.repository
 
+import com.google.firebase.messaging.FirebaseMessaging
 import com.t3r.android_starter_kit.core.network.safeApiCall
 import com.t3r.android_starter_kit.core.result.Result
 import com.t3r.android_starter_kit.core.result.map
@@ -13,8 +14,11 @@ import com.t3r.android_starter_kit.data.remote.dto.notifications.RegisterDeviceR
 import com.t3r.android_starter_kit.domain.model.*
 import com.t3r.android_starter_kit.domain.repository.AuthRepository
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.suspendCancellableCoroutine
 import timber.log.Timber
 import javax.inject.Inject
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
 
 class AuthRepositoryImpl @Inject constructor(
     private val authApi: AuthApi,
@@ -24,7 +28,19 @@ class AuthRepositoryImpl @Inject constructor(
 ) : AuthRepository {
 
     private suspend fun registerFcmDevice() {
-        val fcmToken = dataStore.fcmToken.first() ?: return
+        val fcmToken = dataStore.fcmToken.first()
+            ?: try {
+                val token = suspendCancellableCoroutine { cont ->
+                    FirebaseMessaging.getInstance().token
+                        .addOnSuccessListener { cont.resume(it) }
+                        .addOnFailureListener { cont.resumeWithException(it) }
+                }
+                dataStore.saveFcmToken(token)
+                token
+            } catch (e: Exception) {
+                Timber.e(e, "Failed to retrieve FCM token from Firebase")
+                return
+            }
         try {
             notificationsApi.registerDevice(
                 RegisterDeviceRequestDto(token = fcmToken, platform = "android")

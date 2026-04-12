@@ -45,7 +45,7 @@ fun LoginScreen(
     onNavigateToRegister: () -> Unit,
     onNavigateToForgotPassword: () -> Unit,
     onNavigateToHome: () -> Unit,
-    onNavigateToTwoFactor: () -> Unit,
+    onNavigateToTwoFactor: (challengeToken: String) -> Unit,
 ) {
     val state by viewModel.state.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -55,7 +55,7 @@ fun LoginScreen(
         viewModel.navigation.collect { event ->
             when (event) {
                 AuthNavigationEvent.NavigateToHome -> onNavigateToHome()
-                AuthNavigationEvent.NavigateToTwoFactor -> onNavigateToTwoFactor()
+                is AuthNavigationEvent.NavigateToTwoFactor -> onNavigateToTwoFactor(event.challengeToken)
                 AuthNavigationEvent.NavigateToVerifyEmail -> {}
             }
         }

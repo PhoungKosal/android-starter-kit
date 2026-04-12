@@ -47,6 +47,7 @@ sealed interface AuthEvent {
     data object Register : AuthEvent
 
     // 2FA events
+    data class SetChallengeToken(val value: String) : AuthEvent
     data class UpdateTwoFactorCode(val value: String) : AuthEvent
     data object VerifyTwoFactor : AuthEvent
 

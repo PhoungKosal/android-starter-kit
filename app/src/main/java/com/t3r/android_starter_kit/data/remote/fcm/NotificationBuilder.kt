@@ -47,7 +47,7 @@ object NotificationBuilder {
         )
 
         val builder = NotificationCompat.Builder(context, resolvedChannel)
-            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setSmallIcon(R.mipmap.ic_launcher_foreground)
             .setContentTitle(title)
             .setContentText(body)
             .setAutoCancel(true)
@@ -104,7 +104,7 @@ object NotificationBuilder {
     fun buildSummary(context: Context, channelId: String?): android.app.Notification {
         val resolvedChannel = NotificationChannels.resolve(channelId)
         return NotificationCompat.Builder(context, resolvedChannel)
-            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setSmallIcon(R.mipmap.ic_launcher_foreground)
             .setGroup(NotificationChannels.GROUP_KEY)
             .setGroupSummary(true)
             .setAutoCancel(true)

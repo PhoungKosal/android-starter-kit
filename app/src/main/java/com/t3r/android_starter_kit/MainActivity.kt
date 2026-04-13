@@ -19,6 +19,7 @@ import androidx.lifecycle.lifecycleScope
 import com.google.firebase.messaging.FirebaseMessaging
 import com.t3r.android_starter_kit.data.local.DataStoreManager
 import com.t3r.android_starter_kit.data.remote.fcm.NotificationBuilder
+import com.t3r.android_starter_kit.data.remote.interceptor.TokenAuthenticator
 import com.t3r.android_starter_kit.data.remote.socket.NotificationSocketManager
 import com.t3r.android_starter_kit.domain.repository.NotificationsRepository
 import com.t3r.android_starter_kit.navigation.AppNavigation
@@ -43,6 +44,9 @@ class MainActivity : AppCompatActivity() {
 
     @Inject
     lateinit var notificationSocketManager: NotificationSocketManager
+
+    @Inject
+    lateinit var tokenAuthenticator: TokenAuthenticator
 
     private var isReady by mutableStateOf(false)
     private var isLoggedIn by mutableStateOf(false)
@@ -103,6 +107,15 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        // Fast-path: when token refresh fails, immediately redirect to login
+        // without waiting for DataStore propagation.
+        lifecycleScope.launch {
+            tokenAuthenticator.sessionExpired.collect {
+                isLoggedIn = false
+                notificationSocketManager.disconnect()
+            }
+        }
+
         requestNotificationPermission()
         enableEdgeToEdge()
 
@@ -147,12 +160,12 @@ class MainActivity : AppCompatActivity() {
     private fun handleNotificationIntent(intent: Intent?) {
         val notificationId = intent?.getStringExtra(NotificationBuilder.EXTRA_NOTIFICATION_ID)
         val deepLink = intent?.getStringExtra(NotificationBuilder.EXTRA_DEEP_LINK)
+        // Clear extras first so a config change re-delivery doesn't re-trigger
+        intent?.removeExtra(NotificationBuilder.EXTRA_NOTIFICATION_ID)
+        intent?.removeExtra(NotificationBuilder.EXTRA_DEEP_LINK)
         if (notificationId != null || deepLink != null) {
             pendingNotificationRoute = true
             pendingDeepLink = deepLink
-            // Clear extras so the same intent doesn't re-trigger on config change
-            intent.removeExtra(NotificationBuilder.EXTRA_NOTIFICATION_ID)
-            intent.removeExtra(NotificationBuilder.EXTRA_DEEP_LINK)
         }
     }
 

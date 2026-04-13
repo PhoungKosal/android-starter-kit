@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
@@ -95,13 +96,22 @@ class HomeViewModel @Inject constructor(
                     _state.update { it.copy(user = user, isLoading = false, error = null) }
                 }
                 .onError { error ->
-                    _state.update { it.copy(isLoading = false, error = error) }
+                    // Always clear loading to prevent infinite spinner.
+                    // If the session was cleared (token expired), suppress the error
+                    // message — the user will be redirected to login momentarily.
+                    val stillLoggedIn = dataStoreManager.isLoggedIn.first()
+                    _state.update {
+                        it.copy(isLoading = false, error = if (stillLoggedIn) error else null)
+                    }
                 }
 
             // Load unread notification count
             notificationsRepository.getUnreadCount()
                 .onSuccess { count ->
                     _state.update { it.copy(unreadNotificationCount = count) }
+                }
+                .onError { error ->
+                    Timber.e("Failed to fetch unread count: ${error.code}")
                 }
         }
     }

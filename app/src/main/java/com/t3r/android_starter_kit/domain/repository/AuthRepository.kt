@@ -58,8 +58,4 @@ interface AuthRepository {
         language: String? = null,
         theme: String? = null,
     ): Result<Unit>
-
-    suspend fun isLoggedIn(): Boolean
-
-    suspend fun clearSession()
 }

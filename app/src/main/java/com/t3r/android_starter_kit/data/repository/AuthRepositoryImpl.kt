@@ -25,6 +25,7 @@ import com.t3r.android_starter_kit.data.remote.dto.auth.Verify2faRequestDto
 import com.t3r.android_starter_kit.data.remote.dto.auth.VerifyEmailRequestDto
 import com.t3r.android_starter_kit.data.remote.dto.notifications.RegisterDeviceRequestDto
 import com.t3r.android_starter_kit.data.remote.dto.settings.UpdateUserSettingsRequestDto
+import com.t3r.android_starter_kit.data.remote.interceptor.TokenAuthenticator
 import com.t3r.android_starter_kit.domain.model.AuthTokens
 import com.t3r.android_starter_kit.domain.model.LoginResult
 import com.t3r.android_starter_kit.domain.model.RegisterResult
@@ -44,6 +45,7 @@ class AuthRepositoryImpl @Inject constructor(
     private val notificationsApi: NotificationsApi,
     private val usersApi: UsersApi,
     private val dataStore: DataStoreManager,
+    private val tokenAuthenticator: TokenAuthenticator,
 ) : AuthRepository {
 
     private suspend fun registerFcmDevice() {
@@ -93,6 +95,7 @@ class AuthRepositoryImpl @Inject constructor(
                 val tokens = AuthTokens(accessToken, refreshToken)
                 dataStore.saveTokens(tokens.accessToken, tokens.refreshToken)
                 dataStore.saveUserId(user.id)
+                tokenAuthenticator.resetCircuitBreaker()
                 registerFcmDevice()
                 LoginResult.Authenticated(
                     tokens = tokens,
@@ -117,6 +120,7 @@ class AuthRepositoryImpl @Inject constructor(
             val tokens = AuthTokens(response.accessToken, refreshToken)
             dataStore.saveTokens(tokens.accessToken, tokens.refreshToken)
             dataStore.saveUserId(user.id)
+            tokenAuthenticator.resetCircuitBreaker()
             registerFcmDevice()
             RegisterResult.Authenticated(
                 tokens = tokens,
@@ -141,6 +145,7 @@ class AuthRepositoryImpl @Inject constructor(
         val tokens = AuthTokens(accessToken, refreshToken)
         dataStore.saveTokens(tokens.accessToken, tokens.refreshToken)
         dataStore.saveUserId(user.id)
+        tokenAuthenticator.resetCircuitBreaker()
         registerFcmDevice()
         LoginResult.Authenticated(
             tokens = tokens,
@@ -232,8 +237,4 @@ class AuthRepositoryImpl @Inject constructor(
             request = UpdateUserSettingsRequestDto(language = language, theme = theme),
         )
     }.map { }
-
-    override suspend fun isLoggedIn(): Boolean = dataStore.isLoggedIn.first()
-
-    override suspend fun clearSession() = dataStore.clearSession()
 }

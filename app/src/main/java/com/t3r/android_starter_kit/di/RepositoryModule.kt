@@ -6,6 +6,7 @@ import com.t3r.android_starter_kit.data.remote.api.AuthApi
 import com.t3r.android_starter_kit.data.remote.api.FilesApi
 import com.t3r.android_starter_kit.data.remote.api.NotificationsApi
 import com.t3r.android_starter_kit.data.remote.api.UsersApi
+import com.t3r.android_starter_kit.data.remote.interceptor.TokenAuthenticator
 import com.t3r.android_starter_kit.data.repository.AuthRepositoryImpl
 import com.t3r.android_starter_kit.data.repository.FilesRepositoryImpl
 import com.t3r.android_starter_kit.data.repository.NotificationsRepositoryImpl
@@ -33,12 +34,14 @@ object RepositoryModule {
         notificationsApi: NotificationsApi,
         usersApi: UsersApi,
         dataStoreManager: DataStoreManager,
+        tokenAuthenticator: TokenAuthenticator,
     ): AuthRepository = AuthRepositoryImpl(
         authApi,
         accountApi,
         notificationsApi,
         usersApi,
         dataStoreManager,
+        tokenAuthenticator,
     )
 
     @Provides

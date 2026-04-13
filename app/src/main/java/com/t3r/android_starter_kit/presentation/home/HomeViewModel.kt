@@ -2,7 +2,7 @@ package com.t3r.android_starter_kit.presentation.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.t3r.android_starter_kit.core.locale.UserPreferenceSync
+import com.t3r.android_starter_kit.core.locale.LocaleManager
 import com.t3r.android_starter_kit.core.result.onError
 import com.t3r.android_starter_kit.core.result.onSuccess
 import com.t3r.android_starter_kit.data.local.DataStoreManager
@@ -14,6 +14,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -79,8 +80,18 @@ class HomeViewModel @Inject constructor(
             // Load user profile
             authRepository.getMe()
                 .onSuccess { user ->
-                    UserPreferenceSync.syncLocale(user, dataStoreManager)
-                    UserPreferenceSync.syncTheme(user, dataStoreManager)
+                    // Sync locale
+                    val serverLocale = LocaleManager.AppLocale.fromTag(user.language)
+                    if (serverLocale != LocaleManager.getCurrentLocale()) {
+                        LocaleManager.setLocale(serverLocale)
+                        dataStoreManager.saveLanguage(serverLocale.tag)
+                    }
+                    // Sync theme
+                    val localTheme = dataStoreManager.theme.first()
+                    if (localTheme != "system") {
+                        val serverTheme = user.theme ?: localTheme
+                        dataStoreManager.saveTheme(serverTheme)
+                    }
                     _state.update { it.copy(user = user, isLoading = false, error = null) }
                 }
                 .onError { error ->

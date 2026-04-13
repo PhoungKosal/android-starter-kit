@@ -3,7 +3,6 @@ package com.t3r.android_starter_kit.presentation.settings
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.t3r.android_starter_kit.core.locale.LocaleManager
-import com.t3r.android_starter_kit.core.locale.UserPreferenceSync
 import com.t3r.android_starter_kit.core.result.onError
 import com.t3r.android_starter_kit.core.result.onSuccess
 import com.t3r.android_starter_kit.data.local.DataStoreManager
@@ -12,6 +11,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -47,8 +47,16 @@ class SettingsViewModel @Inject constructor(
             _state.update { it.copy(isLoading = true) }
             authRepository.getMe()
                 .onSuccess { user ->
-                    val serverLocale = UserPreferenceSync.syncLocale(user, dataStoreManager)
-                    val themeValue = UserPreferenceSync.syncTheme(user, dataStoreManager)
+                    // Sync locale
+                    val serverLocale = LocaleManager.AppLocale.fromTag(user.language)
+                    if (serverLocale != LocaleManager.getCurrentLocale()) {
+                        LocaleManager.setLocale(serverLocale)
+                        dataStoreManager.saveLanguage(serverLocale.tag)
+                    }
+                    // Sync theme
+                    val localTheme = dataStoreManager.theme.first()
+                    val themeValue = if (localTheme == "system") "system" else (user.theme ?: localTheme)
+                    if (localTheme != "system") dataStoreManager.saveTheme(themeValue)
                     val currentTheme = AppTheme.fromString(themeValue)
 
                     _state.update {

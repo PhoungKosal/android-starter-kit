@@ -30,7 +30,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
@@ -49,26 +48,26 @@ fun ResetPasswordScreen(
     onNavigateToLogin: () -> Unit,
 ) {
     val state by viewModel.state.collectAsState()
-    val snackbarHostState = remember { SnackbarHostState() }
+    val snackBarHostState = remember { SnackbarHostState() }
     val focusManager = LocalFocusManager.current
-    val context = LocalContext.current
+    val successMessage = stringResource(R.string.reset_password_success)
 
     LaunchedEffect(state.error) {
         state.error?.let {
-            snackbarHostState.showSnackbar(it.message)
+            snackBarHostState.showSnackbar(it.message)
             viewModel.clearError()
         }
     }
 
     LaunchedEffect(state.success) {
         if (state.success) {
-            snackbarHostState.showSnackbar(context.getString(R.string.reset_password_success))
+            snackBarHostState.showSnackbar(successMessage)
             onNavigateToLogin()
         }
     }
 
     Scaffold(
-        snackbarHost = { SnackbarHost(snackbarHostState) },
+        snackbarHost = { SnackbarHost(snackBarHostState) },
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(R.string.reset_password_title)) },

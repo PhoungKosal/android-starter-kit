@@ -32,7 +32,7 @@ sealed interface ProfileNavigationEvent {
 class ProfileViewModel @Inject constructor(
     private val authRepository: AuthRepository,
     private val filesRepository: FilesRepository,
-    @ApplicationContext private val appContext: Context,
+    @param:ApplicationContext private val appContext: Context,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(ProfileState())

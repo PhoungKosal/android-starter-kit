@@ -59,7 +59,6 @@ import java.time.Duration
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -176,16 +175,13 @@ private fun NotificationItem(
     onMarkAsRead: () -> Unit,
     onDelete: () -> Unit,
 ) {
-    val dismissState = rememberSwipeToDismissBoxState(
-        confirmValueChange = { value ->
-            if (value == SwipeToDismissBoxValue.EndToStart) {
-                onDelete()
-                true
-            } else {
-                false
-            }
-        },
-    )
+    val dismissState = rememberSwipeToDismissBoxState()
+
+    LaunchedEffect(dismissState.currentValue) {
+        if (dismissState.currentValue == SwipeToDismissBoxValue.EndToStart) {
+            onDelete()
+        }
+    }
 
     SwipeToDismissBox(
         state = dismissState,
@@ -334,10 +330,13 @@ private fun EmptyNotifications(modifier: Modifier = Modifier) {
 }
 
 /** Format an ISO-8601 timestamp as a human-readable relative time string. */
+private enum class RelativeTime {
+    JUST_NOW, MINUTES, HOURS, DAYS;
+}
+
 @Composable
 private fun formatRelativeTime(isoTimestamp: String): String {
-    val context = LocalContext.current
-    return try {
+    val result = try {
         val parsed = ZonedDateTime.parse(isoTimestamp, DateTimeFormatter.ISO_DATE_TIME)
         val now = ZonedDateTime.now()
         val duration = Duration.between(parsed, now)
@@ -346,13 +345,21 @@ private fun formatRelativeTime(isoTimestamp: String): String {
         val days = duration.toDays()
 
         when {
-            minutes < 1 -> context.getString(R.string.notifications_just_now)
-            minutes < 60 -> context.getString(R.string.notifications_minutes_ago, minutes)
-            hours < 24 -> context.getString(R.string.notifications_hours_ago, hours)
-            days < 7 -> context.getString(R.string.notifications_days_ago, days)
-            else -> parsed.format(DateTimeFormatter.ofPattern("MMM d, yyyy"))
+            minutes < 1 -> Triple(RelativeTime.JUST_NOW, 0L, null)
+            minutes < 60 -> Triple(RelativeTime.MINUTES, minutes, null)
+            hours < 24 -> Triple(RelativeTime.HOURS, hours, null)
+            days < 7 -> Triple(RelativeTime.DAYS, days, null)
+            else -> Triple(null, 0L, parsed.format(DateTimeFormatter.ofPattern("MMM d, yyyy")))
         }
     } catch (_: DateTimeParseException) {
-        isoTimestamp
+        return isoTimestamp
+    }
+
+    return when (result.first) {
+        RelativeTime.JUST_NOW -> stringResource(R.string.notifications_just_now)
+        RelativeTime.MINUTES -> stringResource(R.string.notifications_minutes_ago, result.second)
+        RelativeTime.HOURS -> stringResource(R.string.notifications_hours_ago, result.second)
+        RelativeTime.DAYS -> stringResource(R.string.notifications_days_ago, result.second)
+        null -> result.third!!
     }
 }

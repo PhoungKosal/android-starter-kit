@@ -19,3 +19,34 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+# --- kotlinx.serialization ---
+-keepattributes *Annotation*, InnerClasses
+-dontnote kotlinx.serialization.AnnotationsKt
+
+-keepclassmembers class kotlinx.serialization.json.** { *** Companion; }
+-keepclasseswithmembers class kotlinx.serialization.json.** {
+    kotlinx.serialization.KSerializer serializer(...);
+}
+
+# Keep @Serializable DTO classes
+-keep,includedescriptorclasses class com.t3r.android_starter_kit.data.remote.dto.**$$serializer { *; }
+-keepclassmembers class com.t3r.android_starter_kit.data.remote.dto.** {
+    *** Companion;
+}
+-keepclasseswithmembers class com.t3r.android_starter_kit.data.remote.dto.** {
+    kotlinx.serialization.KSerializer serializer(...);
+}
+
+# Keep Navigation route classes (used by serialization)
+-keepclasseswithmembers class com.t3r.android_starter_kit.navigation.Route$* {
+    kotlinx.serialization.KSerializer serializer(...);
+}
+
+# --- Retrofit ---
+-keepattributes Signature
+-keepattributes Exceptions
+
+# --- Socket.IO ---
+-keep class io.socket.** { *; }
+-keep class org.json.** { *; }

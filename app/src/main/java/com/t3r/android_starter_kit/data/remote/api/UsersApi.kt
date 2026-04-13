@@ -33,12 +33,11 @@ interface UsersApi {
     @DELETE("users/{id}")
     suspend fun deleteUser(@Path("id") id: String)
 
-    @GET("users/{id}/settings")
-    suspend fun getUserSettings(@Path("id") id: String): UserSettingsDto
+    @GET("users/settings")
+    suspend fun getMySettings(): UserSettingsDto
 
-    @PATCH("users/{id}/settings")
-    suspend fun updateUserSettings(
-        @Path("id") id: String,
+    @PATCH("users/settings")
+    suspend fun updateMySettings(
         @Body request: UpdateUserSettingsRequestDto,
     ): UserSettingsDto
 }

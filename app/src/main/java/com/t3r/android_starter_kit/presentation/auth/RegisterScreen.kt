@@ -17,7 +17,6 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -34,10 +33,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import com.t3r.android_starter_kit.R
 import com.t3r.android_starter_kit.presentation.components.LoadingButton
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -82,10 +83,10 @@ fun RegisterScreen(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
-                title = { Text("Create Account") },
+                title = { Text(stringResource(R.string.register_title)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 },
             )
@@ -106,7 +107,7 @@ fun RegisterScreen(
             OutlinedTextField(
                 value = state.firstName,
                 onValueChange = { viewModel.onEvent(AuthEvent.UpdateFirstName(it)) },
-                label = { Text("First Name (optional)") },
+                label = { Text(stringResource(R.string.register_first_name)) },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
@@ -120,7 +121,7 @@ fun RegisterScreen(
             OutlinedTextField(
                 value = state.lastName,
                 onValueChange = { viewModel.onEvent(AuthEvent.UpdateLastName(it)) },
-                label = { Text("Last Name (optional)") },
+                label = { Text(stringResource(R.string.register_last_name)) },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
@@ -134,7 +135,7 @@ fun RegisterScreen(
             OutlinedTextField(
                 value = state.email,
                 onValueChange = { viewModel.onEvent(AuthEvent.UpdateEmail(it)) },
-                label = { Text("Email") },
+                label = { Text(stringResource(R.string.register_email)) },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
                 keyboardOptions = KeyboardOptions(
@@ -151,7 +152,7 @@ fun RegisterScreen(
             OutlinedTextField(
                 value = state.username,
                 onValueChange = { viewModel.onEvent(AuthEvent.UpdateUsername(it)) },
-                label = { Text("Username") },
+                label = { Text(stringResource(R.string.register_username)) },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
@@ -165,7 +166,7 @@ fun RegisterScreen(
             OutlinedTextField(
                 value = state.registerPassword,
                 onValueChange = { viewModel.onEvent(AuthEvent.UpdateRegisterPassword(it)) },
-                label = { Text("Password") },
+                label = { Text(stringResource(R.string.register_password)) },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
                 visualTransformation = PasswordVisualTransformation(),
@@ -180,14 +181,14 @@ fun RegisterScreen(
                     }
                 ),
                 supportingText = {
-                    Text("Min 8 chars, uppercase, number & special character")
+                    Text(stringResource(R.string.register_password_hint))
                 },
             )
 
             Spacer(modifier = Modifier.height(24.dp))
 
             LoadingButton(
-                text = "Create Account",
+                text = stringResource(R.string.register_create),
                 onClick = { viewModel.onEvent(AuthEvent.Register) },
                 isLoading = state.isLoading,
                 modifier = Modifier.fillMaxWidth(),
@@ -199,7 +200,7 @@ fun RegisterScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             TextButton(onClick = onNavigateBack) {
-                Text("Already have an account? Sign In")
+                Text(stringResource(R.string.register_have_account))
             }
 
             Spacer(modifier = Modifier.height(32.dp))

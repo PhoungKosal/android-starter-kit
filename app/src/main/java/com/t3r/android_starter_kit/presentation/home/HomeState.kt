@@ -11,6 +11,5 @@ data class HomeState(
 )
 
 sealed interface HomeEvent {
-    data object LoadProfile : HomeEvent
     data object Refresh : HomeEvent
 }

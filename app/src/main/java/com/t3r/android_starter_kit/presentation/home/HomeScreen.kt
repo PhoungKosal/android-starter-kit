@@ -35,8 +35,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
+import com.t3r.android_starter_kit.R
 import com.t3r.android_starter_kit.presentation.components.ErrorView
 import com.t3r.android_starter_kit.presentation.components.LoadingView
 
@@ -53,7 +55,7 @@ fun HomeScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Home") },
+                title = { Text(stringResource(R.string.home_title)) },
                 actions = {
                     BadgedBox(
                         badge = {
@@ -63,14 +65,14 @@ fun HomeScreen(
                         },
                     ) {
                         IconButton(onClick = onNavigateToNotifications) {
-                            Icon(Icons.Default.Notifications, contentDescription = "Notifications")
+                            Icon(Icons.Default.Notifications, contentDescription = stringResource(R.string.home_notifications))
                         }
                     }
                     IconButton(onClick = onNavigateToProfile) {
-                        Icon(Icons.Default.Person, contentDescription = "Profile")
+                        Icon(Icons.Default.Person, contentDescription = stringResource(R.string.home_profile))
                     }
                     IconButton(onClick = onNavigateToSettings) {
-                        Icon(Icons.Default.Settings, contentDescription = "Settings")
+                        Icon(Icons.Default.Settings, contentDescription = stringResource(R.string.home_settings))
                     }
                 },
             )
@@ -108,7 +110,7 @@ fun HomeScreen(
                         Spacer(modifier = Modifier.height(24.dp))
 
                         Text(
-                            text = "Dashboard",
+                            text = stringResource(R.string.home_dashboard),
                             style = MaterialTheme.typography.titleLarge,
                         )
 
@@ -120,12 +122,12 @@ fun HomeScreen(
                         ) {
                             Column(modifier = Modifier.padding(16.dp)) {
                                 Text(
-                                    text = "Getting Started",
+                                    text = stringResource(R.string.home_getting_started),
                                     style = MaterialTheme.typography.titleMedium,
                                 )
                                 Spacer(modifier = Modifier.height(8.dp))
                                 Text(
-                                    text = "Your Android starter kit is connected and ready. Start building your features!",
+                                    text = stringResource(R.string.home_getting_started_desc),
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 )
@@ -152,7 +154,7 @@ private fun WelcomeCard(user: com.t3r.android_starter_kit.domain.model.User) {
             if (user.avatar != null) {
                 AsyncImage(
                     model = user.avatar,
-                    contentDescription = "Avatar",
+                    contentDescription = stringResource(R.string.profile_avatar),
                     modifier = Modifier
                         .size(56.dp)
                         .clip(CircleShape),
@@ -181,7 +183,7 @@ private fun WelcomeCard(user: com.t3r.android_starter_kit.domain.model.User) {
 
             Column {
                 Text(
-                    text = "Welcome back,",
+                    text = stringResource(R.string.home_welcome_back),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )

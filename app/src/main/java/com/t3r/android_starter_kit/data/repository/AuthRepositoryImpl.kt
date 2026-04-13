@@ -9,9 +9,27 @@ import com.t3r.android_starter_kit.data.mapper.toDomain
 import com.t3r.android_starter_kit.data.remote.api.AccountApi
 import com.t3r.android_starter_kit.data.remote.api.AuthApi
 import com.t3r.android_starter_kit.data.remote.api.NotificationsApi
-import com.t3r.android_starter_kit.data.remote.dto.auth.*
+import com.t3r.android_starter_kit.data.remote.api.UsersApi
+import com.t3r.android_starter_kit.data.remote.dto.auth.DeleteAccountRequestDto
+import com.t3r.android_starter_kit.data.remote.dto.auth.Disable2faRequestDto
+import com.t3r.android_starter_kit.data.remote.dto.auth.Enable2faRequestDto
+import com.t3r.android_starter_kit.data.remote.dto.auth.ForgotPasswordRequestDto
+import com.t3r.android_starter_kit.data.remote.dto.auth.LoginRequestDto
+import com.t3r.android_starter_kit.data.remote.dto.auth.LogoutRequestDto
+import com.t3r.android_starter_kit.data.remote.dto.auth.RefreshTokenRequestDto
+import com.t3r.android_starter_kit.data.remote.dto.auth.RegisterRequestDto
+import com.t3r.android_starter_kit.data.remote.dto.auth.ResetPasswordRequestDto
+import com.t3r.android_starter_kit.data.remote.dto.auth.SetAvatarRequestDto
+import com.t3r.android_starter_kit.data.remote.dto.auth.UpdateProfileRequestDto
+import com.t3r.android_starter_kit.data.remote.dto.auth.Verify2faRequestDto
+import com.t3r.android_starter_kit.data.remote.dto.auth.VerifyEmailRequestDto
 import com.t3r.android_starter_kit.data.remote.dto.notifications.RegisterDeviceRequestDto
-import com.t3r.android_starter_kit.domain.model.*
+import com.t3r.android_starter_kit.data.remote.dto.settings.UpdateUserSettingsRequestDto
+import com.t3r.android_starter_kit.domain.model.AuthTokens
+import com.t3r.android_starter_kit.domain.model.LoginResult
+import com.t3r.android_starter_kit.domain.model.RegisterResult
+import com.t3r.android_starter_kit.domain.model.TwoFactorSetup
+import com.t3r.android_starter_kit.domain.model.User
 import com.t3r.android_starter_kit.domain.repository.AuthRepository
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -24,6 +42,7 @@ class AuthRepositoryImpl @Inject constructor(
     private val authApi: AuthApi,
     private val accountApi: AccountApi,
     private val notificationsApi: NotificationsApi,
+    private val usersApi: UsersApi,
     private val dataStore: DataStoreManager,
 ) : AuthRepository {
 
@@ -68,13 +87,16 @@ class AuthRepositoryImpl @Inject constructor(
                     challengeToken = response.challengeToken ?: "",
                 )
             } else {
-                val tokens = AuthTokens(response.accessToken!!, response.refreshToken!!)
+                val accessToken = requireNotNull(response.accessToken) { "Login response missing accessToken" }
+                val refreshToken = requireNotNull(response.refreshToken) { "Login response missing refreshToken" }
+                val user = requireNotNull(response.user) { "Login response missing user" }
+                val tokens = AuthTokens(accessToken, refreshToken)
                 dataStore.saveTokens(tokens.accessToken, tokens.refreshToken)
-                response.user?.let { dataStore.saveUserId(it.id) }
+                dataStore.saveUserId(user.id)
                 registerFcmDevice()
                 LoginResult.Authenticated(
                     tokens = tokens,
-                    user = response.user!!.toDomain(),
+                    user = user.toDomain(),
                     rules = response.rules?.map { it.toDomain() } ?: emptyList(),
                 )
             }
@@ -90,13 +112,15 @@ class AuthRepositoryImpl @Inject constructor(
         authApi.register(RegisterRequestDto(email, username, password, firstName, lastName))
     }.map { response ->
         if (response.accessToken != null) {
-            val tokens = AuthTokens(response.accessToken, response.refreshToken!!)
+            val refreshToken = requireNotNull(response.refreshToken) { "Register response missing refreshToken" }
+            val user = requireNotNull(response.user) { "Register response missing user" }
+            val tokens = AuthTokens(response.accessToken, refreshToken)
             dataStore.saveTokens(tokens.accessToken, tokens.refreshToken)
-            response.user?.let { dataStore.saveUserId(it.id) }
+            dataStore.saveUserId(user.id)
             registerFcmDevice()
             RegisterResult.Authenticated(
                 tokens = tokens,
-                user = response.user!!.toDomain(),
+                user = user.toDomain(),
             )
         } else {
             RegisterResult.VerificationRequired(
@@ -111,13 +135,16 @@ class AuthRepositoryImpl @Inject constructor(
     ): Result<LoginResult.Authenticated> = safeApiCall {
         authApi.verify2fa(Verify2faRequestDto(challengeToken, code))
     }.map { response ->
-        val tokens = AuthTokens(response.accessToken!!, response.refreshToken!!)
+        val accessToken = requireNotNull(response.accessToken) { "2FA response missing accessToken" }
+        val refreshToken = requireNotNull(response.refreshToken) { "2FA response missing refreshToken" }
+        val user = requireNotNull(response.user) { "2FA response missing user" }
+        val tokens = AuthTokens(accessToken, refreshToken)
         dataStore.saveTokens(tokens.accessToken, tokens.refreshToken)
-        response.user?.let { dataStore.saveUserId(it.id) }
+        dataStore.saveUserId(user.id)
         registerFcmDevice()
         LoginResult.Authenticated(
             tokens = tokens,
-            user = response.user!!.toDomain(),
+            user = user.toDomain(),
             rules = response.rules?.map { it.toDomain() } ?: emptyList(),
         )
     }
@@ -196,6 +223,15 @@ class AuthRepositoryImpl @Inject constructor(
     override suspend fun disable2fa(password: String, code: String): Result<String> = safeApiCall {
         accountApi.disable2fa(Disable2faRequestDto(password, code))
     }.map { it.message }
+
+    override suspend fun updateMySettings(
+        language: String?,
+        theme: String?,
+    ): Result<Unit> = safeApiCall {
+        usersApi.updateMySettings(
+            request = UpdateUserSettingsRequestDto(language = language, theme = theme),
+        )
+    }.map { }
 
     override suspend fun isLoggedIn(): Boolean = dataStore.isLoggedIn.first()
 

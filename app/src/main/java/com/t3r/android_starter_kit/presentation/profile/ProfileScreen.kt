@@ -48,10 +48,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
+import com.t3r.android_starter_kit.R
 import com.t3r.android_starter_kit.presentation.components.ErrorView
 import com.t3r.android_starter_kit.presentation.components.LoadingButton
 import com.t3r.android_starter_kit.presentation.components.LoadingView
@@ -65,11 +66,6 @@ fun ProfileScreen(
 ) {
     val state by viewModel.state.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
-    val context = LocalContext.current
-
-    LaunchedEffect(Unit) {
-        viewModel.contentResolver = context.contentResolver
-    }
 
     val imagePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent(),
@@ -99,15 +95,15 @@ fun ProfileScreen(
     if (state.showDeleteDialog) {
         AlertDialog(
             onDismissRequest = { viewModel.onEvent(ProfileEvent.DismissDeleteDialog) },
-            title = { Text("Delete Account") },
+            title = { Text(stringResource(R.string.profile_delete_title)) },
             text = {
                 Column {
-                    Text("This action is permanent. Enter your password to confirm.")
+                    Text(stringResource(R.string.profile_delete_description))
                     Spacer(modifier = Modifier.height(16.dp))
                     OutlinedTextField(
                         value = state.deletePassword,
                         onValueChange = { viewModel.onEvent(ProfileEvent.UpdateDeletePassword(it)) },
-                        label = { Text("Password") },
+                        label = { Text(stringResource(R.string.password)) },
                         singleLine = true,
                         visualTransformation = PasswordVisualTransformation(),
                         modifier = Modifier.fillMaxWidth(),
@@ -116,7 +112,7 @@ fun ProfileScreen(
             },
             confirmButton = {
                 LoadingButton(
-                    text = "Delete",
+                    text = stringResource(R.string.delete),
                     onClick = { viewModel.onEvent(ProfileEvent.ConfirmDeleteAccount) },
                     isLoading = state.isDeleting,
                     enabled = state.deletePassword.isNotBlank(),
@@ -124,7 +120,7 @@ fun ProfileScreen(
             },
             dismissButton = {
                 TextButton(onClick = { viewModel.onEvent(ProfileEvent.DismissDeleteDialog) }) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.cancel))
                 }
             },
         )
@@ -134,16 +130,16 @@ fun ProfileScreen(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
-                title = { Text("Profile") },
+                title = { Text(stringResource(R.string.profile_title)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 },
                 actions = {
                     if (!state.isEditing && state.user != null) {
                         IconButton(onClick = { viewModel.onEvent(ProfileEvent.StartEditing) }) {
-                            Icon(Icons.Default.Edit, contentDescription = "Edit")
+                            Icon(Icons.Default.Edit, contentDescription = stringResource(R.string.profile_edit))
                         }
                     }
                 },
@@ -195,7 +191,7 @@ fun ProfileScreen(
                                 if (user.avatar != null) {
                                     AsyncImage(
                                         model = user.avatar,
-                                        contentDescription = "Avatar",
+                                        contentDescription = stringResource(R.string.profile_avatar),
                                         modifier = Modifier.fillMaxSize(),
                                         contentScale = ContentScale.Crop,
                                     )
@@ -234,7 +230,7 @@ fun ProfileScreen(
                                     modifier = Modifier.size(16.dp),
                                 )
                                 Spacer(modifier = Modifier.size(4.dp))
-                                Text("Change Photo", style = MaterialTheme.typography.labelSmall)
+                                Text(stringResource(R.string.profile_change_photo), style = MaterialTheme.typography.labelSmall)
                             }
 
                             Spacer(modifier = Modifier.height(12.dp))
@@ -258,28 +254,28 @@ fun ProfileScreen(
 
                         ListItem(
                             headlineContent = { Text(user.email) },
-                            supportingContent = { Text("Email") },
+                            supportingContent = { Text(stringResource(R.string.profile_email_label)) },
                             leadingContent = { Icon(Icons.Outlined.Email, contentDescription = null) },
                         )
                         user.phoneNumber?.let { phone ->
                             ListItem(
                                 headlineContent = { Text(phone) },
-                                supportingContent = { Text("Phone") },
+                                supportingContent = { Text(stringResource(R.string.profile_phone_label)) },
                                 leadingContent = { Icon(Icons.Outlined.Person, contentDescription = null) },
                             )
                         }
                         ListItem(
                             headlineContent = {
-                                Text(if (user.twoFactorEnabled) "Enabled" else "Disabled")
+                                Text(if (user.twoFactorEnabled) stringResource(R.string.enabled) else stringResource(R.string.disabled))
                             },
-                            supportingContent = { Text("Two-Factor Authentication") },
+                            supportingContent = { Text(stringResource(R.string.profile_2fa_label)) },
                             leadingContent = { Icon(Icons.Outlined.Security, contentDescription = null) },
                         )
 
                         Spacer(modifier = Modifier.height(32.dp))
 
                         LoadingButton(
-                            text = "Sign Out",
+                            text = stringResource(R.string.profile_sign_out),
                             onClick = { viewModel.onEvent(ProfileEvent.Logout) },
                             isLoading = state.isLoggingOut,
                             modifier = Modifier
@@ -298,7 +294,7 @@ fun ProfileScreen(
                                 contentColor = MaterialTheme.colorScheme.error,
                             ),
                         ) {
-                            Text("Delete Account")
+                            Text(stringResource(R.string.profile_delete_account))
                         }
 
                         Spacer(modifier = Modifier.height(32.dp))
@@ -326,7 +322,7 @@ private fun EditProfileContent(
         OutlinedTextField(
             value = state.editFirstName,
             onValueChange = { onEvent(ProfileEvent.UpdateFirstName(it)) },
-            label = { Text("First Name") },
+            label = { Text(stringResource(R.string.profile_first_name)) },
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
         )
@@ -335,7 +331,7 @@ private fun EditProfileContent(
         OutlinedTextField(
             value = state.editLastName,
             onValueChange = { onEvent(ProfileEvent.UpdateLastName(it)) },
-            label = { Text("Last Name") },
+            label = { Text(stringResource(R.string.profile_last_name)) },
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
         )
@@ -344,7 +340,7 @@ private fun EditProfileContent(
         OutlinedTextField(
             value = state.editPhoneNumber,
             onValueChange = { onEvent(ProfileEvent.UpdatePhoneNumber(it)) },
-            label = { Text("Phone Number") },
+            label = { Text(stringResource(R.string.profile_phone_number)) },
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
         )
@@ -352,7 +348,7 @@ private fun EditProfileContent(
         Spacer(modifier = Modifier.height(24.dp))
 
         LoadingButton(
-            text = "Save Changes",
+            text = stringResource(R.string.profile_save_changes),
             onClick = { onEvent(ProfileEvent.SaveProfile) },
             isLoading = state.isSaving,
             modifier = Modifier.fillMaxWidth(),
@@ -364,7 +360,7 @@ private fun EditProfileContent(
             onClick = { onEvent(ProfileEvent.CancelEditing) },
             modifier = Modifier.fillMaxWidth(),
         ) {
-            Text("Cancel")
+            Text(stringResource(R.string.cancel))
         }
     }
 }

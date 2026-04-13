@@ -13,9 +13,8 @@ data class NotificationsState(
 )
 
 sealed interface NotificationsEvent {
-    data object Load : NotificationsEvent
-    data object LoadMore : NotificationsEvent
     data object Refresh : NotificationsEvent
+    data object LoadMore : NotificationsEvent
     data class MarkAsRead(val id: String) : NotificationsEvent
     data object MarkAllAsRead : NotificationsEvent
     data class Delete(val id: String) : NotificationsEvent

@@ -27,8 +27,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.t3r.android_starter_kit.R
 import com.t3r.android_starter_kit.presentation.components.LoadingOutlinedButton
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -58,10 +60,10 @@ fun VerifyEmailScreen(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
-                title = { Text("Verify Email") },
+                title = { Text(stringResource(R.string.verify_email_title)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 },
             )
@@ -83,19 +85,19 @@ fun VerifyEmailScreen(
             )
             Spacer(modifier = Modifier.height(24.dp))
             Text(
-                text = "Check Your Email",
+                text = stringResource(R.string.verify_email_heading),
                 style = MaterialTheme.typography.headlineSmall,
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "We've sent a verification link to your email. Click the link to verify your account.",
+                text = stringResource(R.string.verify_email_description),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,
             )
             Spacer(modifier = Modifier.height(32.dp))
             LoadingOutlinedButton(
-                text = "Resend Verification Email",
+                text = stringResource(R.string.verify_email_resend),
                 onClick = { viewModel.resend() },
                 isLoading = state.isLoading,
                 modifier = Modifier.fillMaxWidth(),

@@ -31,11 +31,13 @@ object RepositoryModule {
         authApi: AuthApi,
         accountApi: AccountApi,
         notificationsApi: NotificationsApi,
+        usersApi: UsersApi,
         dataStoreManager: DataStoreManager,
     ): AuthRepository = AuthRepositoryImpl(
         authApi,
         accountApi,
         notificationsApi,
+        usersApi,
         dataStoreManager,
     )
 

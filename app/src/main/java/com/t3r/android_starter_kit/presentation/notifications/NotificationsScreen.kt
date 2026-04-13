@@ -20,14 +20,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.DoneAll
-import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.Delete
-import androidx.compose.material.icons.outlined.Info
-import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.outlined.Notifications
-import androidx.compose.material.icons.outlined.Person
-import androidx.compose.material.icons.outlined.ShieldMoon
-import androidx.compose.material.icons.outlined.Warning
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -52,10 +46,11 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.t3r.android_starter_kit.R
+import com.t3r.android_starter_kit.core.notification.NotificationConfig
 import com.t3r.android_starter_kit.domain.model.Notification
 import com.t3r.android_starter_kit.domain.model.NotificationType
 import com.t3r.android_starter_kit.presentation.components.ErrorView
@@ -64,6 +59,8 @@ import java.time.Duration
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -96,16 +93,16 @@ fun NotificationsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Notifications") },
+                title = { Text(stringResource(R.string.notifications_title)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 },
                 actions = {
                     if (state.notifications.any { !it.isRead }) {
                         IconButton(onClick = { viewModel.onEvent(NotificationsEvent.MarkAllAsRead) }) {
-                            Icon(Icons.Default.DoneAll, contentDescription = "Mark all as read")
+                            Icon(Icons.Default.DoneAll, contentDescription = stringResource(R.string.notifications_mark_all_read))
                         }
                     }
                 },
@@ -119,7 +116,7 @@ fun NotificationsScreen(
             state.error != null && state.notifications.isEmpty() -> {
                 ErrorView(
                     message = state.error!!.message,
-                    onRetry = { viewModel.onEvent(NotificationsEvent.Load) },
+                    onRetry = { viewModel.onEvent(NotificationsEvent.Refresh) },
                     modifier = Modifier.padding(padding),
                 )
             }
@@ -208,7 +205,7 @@ private fun NotificationItem(
                 ) {
                     Icon(
                         Icons.Outlined.Delete,
-                        contentDescription = "Delete",
+                        contentDescription = stringResource(R.string.delete),
                         tint = MaterialTheme.colorScheme.onErrorContainer,
                     )
                 }
@@ -239,7 +236,7 @@ private fun NotificationItem(
                     contentAlignment = Alignment.Center,
                 ) {
                     Icon(
-                        imageVector = notificationIcon(notification.key, notification.type),
+                        imageVector = NotificationConfig.getIcon(notification),
                         contentDescription = null,
                         modifier = Modifier.size(22.dp),
                         tint = notificationIconTint(notification.type),
@@ -249,21 +246,26 @@ private fun NotificationItem(
                 Spacer(modifier = Modifier.width(12.dp))
 
                 Column(modifier = Modifier.weight(1f)) {
-                    notification.title?.let {
+                    // Key-based label resolution — mirrors frontend useNotifications.getNotificationLabel()
+                    val label = NotificationConfig.getLabel(notification)
+                    if (label.isNotBlank()) {
                         Text(
-                            text = it,
+                            text = label,
                             style = MaterialTheme.typography.titleSmall,
                             fontWeight = if (notification.isRead) FontWeight.Normal else FontWeight.Bold,
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                     }
 
-                    notification.message?.let {
-                        Text(
-                            text = it,
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
+                    // Show message as subtitle only for non-keyed notifications
+                    if (notification.key == null) {
+                        notification.message?.let {
+                            Text(
+                                text = it,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
                     }
 
                     notification.createdAt?.let {
@@ -288,25 +290,6 @@ private fun NotificationItem(
                 }
             }
         }
-    }
-}
-
-/** Map notification key / type to an icon — mirrors frontend `notification.config.ts`. */
-private fun notificationIcon(
-    key: String?,
-    type: NotificationType,
-): ImageVector = when (key) {
-    "twoFA.enabled" -> Icons.Outlined.ShieldMoon
-    "twoFA.disabled" -> Icons.Outlined.ShieldMoon
-    "account.activated" -> Icons.Outlined.Person
-    "security.alert" -> Icons.Outlined.Warning
-    "password.changed" -> Icons.Outlined.Lock
-    else -> when (type) {
-        NotificationType.SUCCESS -> Icons.Outlined.CheckCircle
-        NotificationType.WARNING -> Icons.Outlined.Warning
-        NotificationType.ERROR -> Icons.Outlined.Warning
-        NotificationType.INFO -> Icons.Outlined.Info
-        NotificationType.GENERAL -> Icons.Outlined.Notifications
     }
 }
 
@@ -337,12 +320,12 @@ private fun EmptyNotifications(modifier: Modifier = Modifier) {
         )
         Spacer(modifier = Modifier.height(16.dp))
         Text(
-            text = "No Notifications",
+            text = stringResource(R.string.notifications_empty_title),
             style = MaterialTheme.typography.titleMedium,
         )
         Spacer(modifier = Modifier.height(8.dp))
         Text(
-            text = "You're all caught up!",
+            text = stringResource(R.string.notifications_empty_desc),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
@@ -351,7 +334,9 @@ private fun EmptyNotifications(modifier: Modifier = Modifier) {
 }
 
 /** Format an ISO-8601 timestamp as a human-readable relative time string. */
+@Composable
 private fun formatRelativeTime(isoTimestamp: String): String {
+    val context = LocalContext.current
     return try {
         val parsed = ZonedDateTime.parse(isoTimestamp, DateTimeFormatter.ISO_DATE_TIME)
         val now = ZonedDateTime.now()
@@ -361,13 +346,13 @@ private fun formatRelativeTime(isoTimestamp: String): String {
         val days = duration.toDays()
 
         when {
-            minutes < 1 -> "Just now"
-            minutes < 60 -> "${minutes}m ago"
-            hours < 24 -> "${hours}h ago"
-            days < 7 -> "${days}d ago"
+            minutes < 1 -> context.getString(R.string.notifications_just_now)
+            minutes < 60 -> context.getString(R.string.notifications_minutes_ago, minutes)
+            hours < 24 -> context.getString(R.string.notifications_hours_ago, hours)
+            days < 7 -> context.getString(R.string.notifications_days_ago, days)
             else -> parsed.format(DateTimeFormatter.ofPattern("MMM d, yyyy"))
         }
     } catch (_: DateTimeParseException) {
-        isoTimestamp // Fall back to raw string if parsing fails
+        isoTimestamp
     }
 }

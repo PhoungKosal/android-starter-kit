@@ -31,10 +31,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
+import com.t3r.android_starter_kit.R
 import com.t3r.android_starter_kit.presentation.components.LoadingButton
 import com.t3r.android_starter_kit.presentation.components.LoadingOutlinedButton
 
@@ -70,20 +72,20 @@ fun TwoFactorScreen(
     if (state.showSetupDialog && !state.twoFactorEnabled) {
         AlertDialog(
             onDismissRequest = { viewModel.onEvent(TwoFactorEvent.DismissSetupDialog) },
-            title = { Text("Enable Two-Factor Auth") },
+            title = { Text(stringResource(R.string.two_factor_enable_title)) },
             text = {
                 Column(
                     modifier = Modifier.verticalScroll(rememberScrollState()),
                 ) {
                     if (state.qrCodeUrl != null) {
                         Text(
-                            text = "Scan this QR code with your authenticator app:",
+                            text = stringResource(R.string.two_factor_scan_qr),
                             style = MaterialTheme.typography.bodyMedium,
                         )
                         Spacer(modifier = Modifier.height(12.dp))
                         AsyncImage(
                             model = state.qrCodeUrl,
-                            contentDescription = "QR Code",
+                            contentDescription = stringResource(R.string.two_factor_qr_content_desc),
                             modifier = Modifier
                                 .size(200.dp)
                                 .align(Alignment.CenterHorizontally),
@@ -92,7 +94,7 @@ fun TwoFactorScreen(
                     }
                     if (state.secret != null) {
                         Text(
-                            text = "Or enter this key manually:",
+                            text = stringResource(R.string.two_factor_manual_entry),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -109,7 +111,7 @@ fun TwoFactorScreen(
                     OutlinedTextField(
                         value = state.verifyCode,
                         onValueChange = { viewModel.onEvent(TwoFactorEvent.UpdateVerifyCode(it)) },
-                        label = { Text("Verification Code") },
+                        label = { Text(stringResource(R.string.two_factor_code_label)) },
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth(),
                     )
@@ -117,7 +119,7 @@ fun TwoFactorScreen(
             },
             confirmButton = {
                 LoadingButton(
-                    text = "Enable",
+                    text = stringResource(R.string.two_factor_enable),
                     onClick = { viewModel.onEvent(TwoFactorEvent.ConfirmEnable) },
                     isLoading = state.isLoading,
                     enabled = state.verifyCode.isNotBlank(),
@@ -125,7 +127,7 @@ fun TwoFactorScreen(
             },
             dismissButton = {
                 TextButton(onClick = { viewModel.onEvent(TwoFactorEvent.DismissSetupDialog) }) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.cancel))
                 }
             },
         )
@@ -135,15 +137,15 @@ fun TwoFactorScreen(
     if (state.showDisableDialog) {
         AlertDialog(
             onDismissRequest = { viewModel.onEvent(TwoFactorEvent.DismissDisableDialog) },
-            title = { Text("Disable Two-Factor Auth") },
+            title = { Text(stringResource(R.string.two_factor_disable_title)) },
             text = {
                 Column {
-                    Text("Enter your password and a 6-digit code to disable 2FA.")
+                    Text(stringResource(R.string.two_factor_disable_desc))
                     Spacer(modifier = Modifier.height(16.dp))
                     OutlinedTextField(
                         value = state.disablePassword,
                         onValueChange = { viewModel.onEvent(TwoFactorEvent.UpdateDisablePassword(it)) },
-                        label = { Text("Password") },
+                        label = { Text(stringResource(R.string.password)) },
                         singleLine = true,
                         visualTransformation = PasswordVisualTransformation(),
                         modifier = Modifier.fillMaxWidth(),
@@ -152,7 +154,7 @@ fun TwoFactorScreen(
                     OutlinedTextField(
                         value = state.disableCode,
                         onValueChange = { viewModel.onEvent(TwoFactorEvent.UpdateDisableCode(it)) },
-                        label = { Text("Authenticator Code") },
+                        label = { Text(stringResource(R.string.two_factor_authenticator_code)) },
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth(),
                     )
@@ -160,7 +162,7 @@ fun TwoFactorScreen(
             },
             confirmButton = {
                 LoadingButton(
-                    text = "Disable",
+                    text = stringResource(R.string.two_factor_disable),
                     onClick = { viewModel.onEvent(TwoFactorEvent.ConfirmDisable) },
                     isLoading = state.isLoading,
                     enabled = state.disablePassword.isNotBlank() && state.disableCode.isNotBlank(),
@@ -168,7 +170,7 @@ fun TwoFactorScreen(
             },
             dismissButton = {
                 TextButton(onClick = { viewModel.onEvent(TwoFactorEvent.DismissDisableDialog) }) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.cancel))
                 }
             },
         )
@@ -178,10 +180,10 @@ fun TwoFactorScreen(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
-                title = { Text("Two-Factor Authentication") },
+                title = { Text(stringResource(R.string.two_factor_settings_title)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 },
             )
@@ -196,15 +198,15 @@ fun TwoFactorScreen(
             Card(modifier = Modifier.fillMaxWidth()) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(
-                        text = if (state.twoFactorEnabled) "2FA is Enabled" else "2FA is Disabled",
+                        text = if (state.twoFactorEnabled) stringResource(R.string.two_factor_enabled_status) else stringResource(R.string.two_factor_disabled_status),
                         style = MaterialTheme.typography.titleMedium,
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
                         text = if (state.twoFactorEnabled) {
-                            "Your account is protected with two-factor authentication."
+                            stringResource(R.string.two_factor_enabled_desc)
                         } else {
-                            "Add an extra layer of security to your account."
+                            stringResource(R.string.two_factor_disabled_desc)
                         },
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -213,13 +215,13 @@ fun TwoFactorScreen(
 
                     if (state.twoFactorEnabled) {
                         LoadingOutlinedButton(
-                            text = "Disable 2FA",
+                            text = stringResource(R.string.two_factor_disable_2fa),
                             onClick = { viewModel.onEvent(TwoFactorEvent.ShowDisableDialog) },
                             modifier = Modifier.fillMaxWidth(),
                         )
                     } else {
                         LoadingButton(
-                            text = "Enable 2FA",
+                            text = stringResource(R.string.two_factor_enable_2fa),
                             onClick = { viewModel.onEvent(TwoFactorEvent.RequestEnable) },
                             modifier = Modifier.fillMaxWidth(),
                         )
@@ -233,12 +235,12 @@ fun TwoFactorScreen(
                 Card(modifier = Modifier.fillMaxWidth()) {
                     Column(modifier = Modifier.padding(16.dp)) {
                         Text(
-                            text = "Recovery Codes",
+                            text = stringResource(R.string.two_factor_recovery_codes),
                             style = MaterialTheme.typography.titleMedium,
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
-                            text = "Save these codes in a safe place. Each code can only be used once.",
+                            text = stringResource(R.string.two_factor_recovery_desc),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )

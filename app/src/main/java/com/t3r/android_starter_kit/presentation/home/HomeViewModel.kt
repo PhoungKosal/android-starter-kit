@@ -2,8 +2,10 @@ package com.t3r.android_starter_kit.presentation.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.t3r.android_starter_kit.core.locale.UserPreferenceSync
 import com.t3r.android_starter_kit.core.result.onError
 import com.t3r.android_starter_kit.core.result.onSuccess
+import com.t3r.android_starter_kit.data.local.DataStoreManager
 import com.t3r.android_starter_kit.data.remote.socket.NotificationSocketEvent
 import com.t3r.android_starter_kit.data.remote.socket.NotificationSocketManager
 import com.t3r.android_starter_kit.domain.repository.AuthRepository
@@ -21,6 +23,7 @@ class HomeViewModel @Inject constructor(
     private val authRepository: AuthRepository,
     private val notificationsRepository: NotificationsRepository,
     private val socketManager: NotificationSocketManager,
+    private val dataStoreManager: DataStoreManager,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(HomeState())
@@ -33,7 +36,6 @@ class HomeViewModel @Inject constructor(
 
     fun onEvent(event: HomeEvent) {
         when (event) {
-            HomeEvent.LoadProfile -> loadData()
             HomeEvent.Refresh -> loadData()
         }
     }
@@ -77,6 +79,8 @@ class HomeViewModel @Inject constructor(
             // Load user profile
             authRepository.getMe()
                 .onSuccess { user ->
+                    UserPreferenceSync.syncLocale(user, dataStoreManager)
+                    UserPreferenceSync.syncTheme(user, dataStoreManager)
                     _state.update { it.copy(user = user, isLoading = false, error = null) }
                 }
                 .onError { error ->

@@ -37,7 +37,7 @@ fun UserDto.toDomain(): User = User(
     role = role?.toDomain(),
     language = settings?.language,
     theme = settings?.theme,
-    notificationsEnabled = settings?.notificationsEnabled ?: true,
+    notificationsEnabled = settings?.emailNotifications ?: true,
     createdAt = createdAt,
 )
 

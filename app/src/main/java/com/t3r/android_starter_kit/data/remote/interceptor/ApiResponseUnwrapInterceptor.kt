@@ -14,6 +14,10 @@ class ApiResponseUnwrapInterceptor : Interceptor {
 
     override fun intercept(chain: Interceptor.Chain): Response {
         val response = chain.proceed(chain.request())
+
+        // Only unwrap successful JSON responses; leave errors intact for proper parsing
+        if (!response.isSuccessful) return response
+
         val contentType = response.body?.contentType()
 
         // Only process JSON responses

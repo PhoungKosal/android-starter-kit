@@ -34,9 +34,16 @@ class DataStoreManager @Inject constructor(
     }
 
     // -- Auth Tokens (encrypted via SecureTokenStore) --
+    // Use getAccessToken()/getRefreshToken() for synchronous reads in interceptors.
+    // These flows re-emit when DataStore prefs change (e.g. after saveTokens/clearSession).
 
     val accessToken: Flow<String?> = context.dataStore.data.map { secureTokenStore.accessToken }
     val refreshToken: Flow<String?> = context.dataStore.data.map { secureTokenStore.refreshToken }
+
+    /** Synchronous token access for interceptors — avoids runBlocking on a Flow. */
+    fun getAccessToken(): String? = secureTokenStore.accessToken
+    fun getRefreshToken(): String? = secureTokenStore.refreshToken
+
     val isLoggedIn: Flow<Boolean> = context.dataStore.data.map { it[Keys.IS_LOGGED_IN] ?: false }
     val userId: Flow<String?> = context.dataStore.data.map { it[Keys.USER_ID] }
 

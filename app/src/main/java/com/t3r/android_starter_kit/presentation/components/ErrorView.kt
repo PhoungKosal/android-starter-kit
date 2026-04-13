@@ -17,8 +17,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.t3r.android_starter_kit.R
 
 @Composable
 fun ErrorView(
@@ -42,7 +44,7 @@ fun ErrorView(
         )
         Spacer(modifier = Modifier.height(16.dp))
         Text(
-            text = if (isNetworkError) "No Connection" else "Something went wrong",
+            text = if (isNetworkError) stringResource(R.string.error_no_connection) else stringResource(R.string.error_something_wrong),
             style = MaterialTheme.typography.headlineSmall,
             textAlign = TextAlign.Center,
         )
@@ -56,7 +58,7 @@ fun ErrorView(
         if (onRetry != null) {
             Spacer(modifier = Modifier.height(24.dp))
             OutlinedButton(onClick = onRetry) {
-                Text("Retry")
+                Text(stringResource(R.string.retry))
             }
         }
     }

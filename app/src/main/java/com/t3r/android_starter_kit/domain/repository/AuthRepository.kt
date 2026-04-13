@@ -50,6 +50,11 @@ interface AuthRepository {
 
     suspend fun disable2fa(password: String, code: String): Result<String>
 
+    suspend fun updateMySettings(
+        language: String? = null,
+        theme: String? = null,
+    ): Result<Unit>
+
     suspend fun isLoggedIn(): Boolean
 
     suspend fun clearSession()

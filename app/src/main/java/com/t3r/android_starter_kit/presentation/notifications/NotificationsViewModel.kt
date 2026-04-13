@@ -31,9 +31,8 @@ class NotificationsViewModel @Inject constructor(
 
     fun onEvent(event: NotificationsEvent) {
         when (event) {
-            NotificationsEvent.Load -> load()
-            NotificationsEvent.LoadMore -> loadMore()
             NotificationsEvent.Refresh -> load()
+            NotificationsEvent.LoadMore -> loadMore()
             is NotificationsEvent.MarkAsRead -> markAsRead(event.id)
             NotificationsEvent.MarkAllAsRead -> markAllAsRead()
             is NotificationsEvent.Delete -> delete(event.id)

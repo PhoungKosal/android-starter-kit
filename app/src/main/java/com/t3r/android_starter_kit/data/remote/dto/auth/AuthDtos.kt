@@ -150,10 +150,15 @@ data class UserProfileDto(
 @Serializable
 data class UserSettingsDto(
     val id: String? = null,
-    val language: String? = null,
+    val userId: String? = null,
     val theme: String? = null,
-    val notificationsEnabled: Boolean = true,
-    val privacyLevel: String? = null,
+    val language: String? = null,
+    val timezone: String? = null,
+    val dateFormat: String? = null,
+    val primaryColor: String? = null,
+    val neutralColor: String? = null,
+    val emailNotifications: Boolean = true,
+    val pushNotifications: Boolean = true,
 )
 
 @Serializable

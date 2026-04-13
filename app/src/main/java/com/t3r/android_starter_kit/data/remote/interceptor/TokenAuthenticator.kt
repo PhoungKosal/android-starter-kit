@@ -4,7 +4,6 @@ import com.t3r.android_starter_kit.BuildConfig
 import com.t3r.android_starter_kit.data.local.DataStoreManager
 import com.t3r.android_starter_kit.data.remote.dto.auth.RefreshTokenRequestDto
 import com.t3r.android_starter_kit.data.remote.dto.auth.RefreshTokenResponseDto
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
 import okhttp3.Authenticator
@@ -37,7 +36,7 @@ class TokenAuthenticator(
         if (responseCount(response) > 1) return null
 
         synchronized(lock) {
-            val currentToken = runBlocking { dataStoreManager.accessToken.first() }
+            val currentToken = dataStoreManager.getAccessToken()
             val failedToken = response.request.header("Authorization")?.removePrefix("Bearer ")
 
             // Another thread already refreshed the token — just retry with it
@@ -47,7 +46,7 @@ class TokenAuthenticator(
                     .build()
             }
 
-            val refreshToken = runBlocking { dataStoreManager.refreshToken.first() }
+            val refreshToken = dataStoreManager.getRefreshToken()
             if (refreshToken.isNullOrBlank()) {
                 runBlocking { dataStoreManager.clearSession() }
                 return null
@@ -65,22 +64,24 @@ class TokenAuthenticator(
 
                 val refreshResponse = publicClient.newCall(request).execute()
 
-                if (refreshResponse.isSuccessful) {
-                    val responseBody = refreshResponse.body?.string()
-                    if (responseBody == null) {
-                        runBlocking { dataStoreManager.clearSession() }
-                        return null
-                    }
-                    val tokens = json.decodeFromString<RefreshTokenResponseDto>(responseBody)
-                    runBlocking { dataStoreManager.saveTokens(tokens.accessToken, tokens.refreshToken) }
+                refreshResponse.use { res ->
+                    if (res.isSuccessful) {
+                        val responseBody = res.body?.string()
+                        if (responseBody == null) {
+                            runBlocking { dataStoreManager.clearSession() }
+                            return null
+                        }
+                        val tokens = json.decodeFromString<RefreshTokenResponseDto>(responseBody)
+                        runBlocking { dataStoreManager.saveTokens(tokens.accessToken, tokens.refreshToken) }
 
-                    response.request.newBuilder()
-                        .header("Authorization", "Bearer ${tokens.accessToken}")
-                        .build()
-                } else {
-                    Timber.w("Token refresh returned ${refreshResponse.code}")
-                    runBlocking { dataStoreManager.clearSession() }
-                    null
+                        response.request.newBuilder()
+                            .header("Authorization", "Bearer ${tokens.accessToken}")
+                            .build()
+                    } else {
+                        Timber.w("Token refresh returned ${res.code}")
+                        runBlocking { dataStoreManager.clearSession() }
+                        null
+                    }
                 }
             } catch (e: Exception) {
                 Timber.e(e, "Token refresh failed")

@@ -32,11 +32,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
+import com.t3r.android_starter_kit.R
 import com.t3r.android_starter_kit.presentation.components.LoadingButton
 
 @Composable
@@ -84,12 +86,12 @@ fun LoginScreen(
             Spacer(modifier = Modifier.height(48.dp))
 
             Text(
-                text = "Welcome Back",
+                text = stringResource(R.string.login_welcome),
                 style = MaterialTheme.typography.headlineLarge,
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "Sign in to your account",
+                text = stringResource(R.string.login_subtitle),
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -99,7 +101,7 @@ fun LoginScreen(
             OutlinedTextField(
                 value = state.identifier,
                 onValueChange = { viewModel.onEvent(AuthEvent.UpdateIdentifier(it)) },
-                label = { Text("Email or Username") },
+                label = { Text(stringResource(R.string.login_identifier_label)) },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
                 keyboardOptions = KeyboardOptions(
@@ -116,7 +118,7 @@ fun LoginScreen(
             OutlinedTextField(
                 value = state.password,
                 onValueChange = { viewModel.onEvent(AuthEvent.UpdatePassword(it)) },
-                label = { Text("Password") },
+                label = { Text(stringResource(R.string.login_password_label)) },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
                 visualTransformation = if (state.passwordVisible) {
@@ -132,7 +134,7 @@ fun LoginScreen(
                             } else {
                                 Icons.Default.Visibility
                             },
-                            contentDescription = "Toggle password visibility",
+                            contentDescription = stringResource(R.string.login_toggle_password),
                         )
                     }
                 },
@@ -154,13 +156,13 @@ fun LoginScreen(
                 onClick = onNavigateToForgotPassword,
                 modifier = Modifier.align(Alignment.End),
             ) {
-                Text("Forgot Password?")
+                Text(stringResource(R.string.login_forgot_password))
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
             LoadingButton(
-                text = "Sign In",
+                text = stringResource(R.string.login_sign_in),
                 onClick = { viewModel.onEvent(AuthEvent.Login) },
                 isLoading = state.isLoading,
                 modifier = Modifier.fillMaxWidth(),
@@ -170,7 +172,7 @@ fun LoginScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             TextButton(onClick = onNavigateToRegister) {
-                Text("Don't have an account? Sign Up")
+                Text(stringResource(R.string.login_no_account))
             }
 
             Spacer(modifier = Modifier.height(48.dp))

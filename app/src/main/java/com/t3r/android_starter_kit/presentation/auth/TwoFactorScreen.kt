@@ -30,10 +30,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.t3r.android_starter_kit.R
 import com.t3r.android_starter_kit.presentation.components.LoadingButton
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -74,10 +76,10 @@ fun TwoFactorScreen(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
-                title = { Text("Two-Factor Authentication") },
+                title = { Text(stringResource(R.string.two_factor_title)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 },
             )
@@ -93,12 +95,12 @@ fun TwoFactorScreen(
             verticalArrangement = Arrangement.Center,
         ) {
             Text(
-                text = "Enter Verification Code",
+                text = stringResource(R.string.two_factor_heading),
                 style = MaterialTheme.typography.headlineSmall,
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "Enter the 6-digit code from your authenticator app or a recovery code.",
+                text = stringResource(R.string.two_factor_description),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,
@@ -109,7 +111,7 @@ fun TwoFactorScreen(
             OutlinedTextField(
                 value = state.twoFactorCode,
                 onValueChange = { viewModel.onEvent(AuthEvent.UpdateTwoFactorCode(it)) },
-                label = { Text("Verification Code") },
+                label = { Text(stringResource(R.string.two_factor_code_label)) },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
                 keyboardOptions = KeyboardOptions(
@@ -127,7 +129,7 @@ fun TwoFactorScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             LoadingButton(
-                text = "Verify",
+                text = stringResource(R.string.two_factor_verify),
                 onClick = { viewModel.onEvent(AuthEvent.VerifyTwoFactor) },
                 isLoading = state.isLoading,
                 modifier = Modifier.fillMaxWidth(),

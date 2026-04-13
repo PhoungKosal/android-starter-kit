@@ -1,6 +1,6 @@
 package com.t3r.android_starter_kit.presentation.profile
 
-import android.content.ContentResolver
+import android.content.Context
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -12,6 +12,7 @@ import com.t3r.android_starter_kit.core.result.onSuccess
 import com.t3r.android_starter_kit.domain.repository.AuthRepository
 import com.t3r.android_starter_kit.domain.repository.FilesRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -31,6 +32,7 @@ sealed interface ProfileNavigationEvent {
 class ProfileViewModel @Inject constructor(
     private val authRepository: AuthRepository,
     private val filesRepository: FilesRepository,
+    @ApplicationContext private val appContext: Context,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(ProfileState())
@@ -38,8 +40,6 @@ class ProfileViewModel @Inject constructor(
 
     private val _navigation = MutableSharedFlow<ProfileNavigationEvent>()
     val navigation = _navigation.asSharedFlow()
-
-    var contentResolver: ContentResolver? = null
 
     init {
         loadProfile()
@@ -133,7 +133,7 @@ class ProfileViewModel @Inject constructor(
     }
 
     private fun uploadAvatar(uri: Uri) {
-        val resolver = contentResolver ?: return
+        val resolver = appContext.contentResolver
         viewModelScope.launch {
             _state.update { it.copy(isUploadingAvatar = true) }
             try {

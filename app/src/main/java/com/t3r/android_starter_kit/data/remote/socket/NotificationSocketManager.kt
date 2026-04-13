@@ -107,13 +107,10 @@ class NotificationSocketManager @Inject constructor(
 
             if (payload is JSONObject) {
                 val event = payload.optString("event", "")
-                val notificationId = payload.optString("notificationId", null.toString())
-                    .takeIf { it != "null" }
-                val unreadCount = if (payload.has("unreadCount")) {
-                    payload.getInt("unreadCount")
-                } else {
-                    null
-                }
+                val notificationId = payload.optString("notificationId", "")
+                    .ifEmpty { null }
+                val unreadCount = payload.optInt("unreadCount", -1)
+                    .takeIf { it >= 0 }
 
                 when (event) {
                     "read" -> _events.tryEmit(

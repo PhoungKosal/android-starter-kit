@@ -49,4 +49,5 @@ sealed interface ProfileEvent {
     data object DismissDeleteDialog : ProfileEvent
     data class UpdateDeletePassword(val value: String) : ProfileEvent
     data object ConfirmDeleteAccount : ProfileEvent
+    data object ClearError : ProfileEvent
 }

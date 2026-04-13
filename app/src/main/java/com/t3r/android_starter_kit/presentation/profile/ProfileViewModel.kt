@@ -60,6 +60,7 @@ class ProfileViewModel @Inject constructor(
             ProfileEvent.DismissDeleteDialog -> _state.update { it.copy(showDeleteDialog = false, deletePassword = "") }
             is ProfileEvent.UpdateDeletePassword -> _state.update { it.copy(deletePassword = event.value) }
             ProfileEvent.ConfirmDeleteAccount -> deleteAccount()
+            ProfileEvent.ClearError -> _state.update { it.copy(error = null) }
         }
     }
 

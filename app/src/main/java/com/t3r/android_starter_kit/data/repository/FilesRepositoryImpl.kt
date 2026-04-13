@@ -49,11 +49,12 @@ class FilesRepositoryImpl @Inject constructor(
         try {
             val body = bytes.toRequestBody(mimeType.toMediaType())
             val request = Request.Builder().url(url).put(body).build()
-            val response = httpClient.newCall(request).execute()
-            if (response.isSuccessful) {
-                Result.Success(Unit)
-            } else {
-                Result.Error(AppError("UPLOAD_FAILED", "Upload failed: ${response.code}"))
+            httpClient.newCall(request).execute().use { response ->
+                if (response.isSuccessful) {
+                    Result.Success(Unit)
+                } else {
+                    Result.Error(AppError("UPLOAD_FAILED", "Upload failed: ${response.code}"))
+                }
             }
         } catch (e: Exception) {
             Result.Error(AppError("UPLOAD_FAILED", e.message ?: "Upload failed"))

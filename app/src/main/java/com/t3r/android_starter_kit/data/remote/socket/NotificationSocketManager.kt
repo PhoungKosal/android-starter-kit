@@ -10,7 +10,6 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import org.json.JSONObject
 import timber.log.Timber
@@ -45,7 +44,7 @@ class NotificationSocketManager @Inject constructor(
         if (socket?.connected() == true) return
 
         scope.launch {
-            val token = dataStoreManager.accessToken.first()
+            val token = dataStoreManager.getAccessToken()
             if (token.isNullOrBlank()) {
                 Timber.d("[WS] No token available, skipping socket connection")
                 return@launch

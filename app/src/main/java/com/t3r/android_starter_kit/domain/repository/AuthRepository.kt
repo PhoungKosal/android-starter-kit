@@ -1,7 +1,11 @@
 package com.t3r.android_starter_kit.domain.repository
 
 import com.t3r.android_starter_kit.core.result.Result
-import com.t3r.android_starter_kit.domain.model.*
+import com.t3r.android_starter_kit.domain.model.AuthTokens
+import com.t3r.android_starter_kit.domain.model.LoginResult
+import com.t3r.android_starter_kit.domain.model.RegisterResult
+import com.t3r.android_starter_kit.domain.model.TwoFactorSetup
+import com.t3r.android_starter_kit.domain.model.User
 
 interface AuthRepository {
 

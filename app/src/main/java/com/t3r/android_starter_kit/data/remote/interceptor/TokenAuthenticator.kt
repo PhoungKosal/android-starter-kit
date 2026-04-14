@@ -4,6 +4,7 @@ import com.t3r.android_starter_kit.BuildConfig
 import com.t3r.android_starter_kit.data.local.DataStoreManager
 import com.t3r.android_starter_kit.data.remote.dto.auth.RefreshTokenRequestDto
 import com.t3r.android_starter_kit.data.remote.dto.auth.RefreshTokenResponseDto
+import com.t3r.android_starter_kit.presentation.settings.SettingsViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -125,6 +126,7 @@ class TokenAuthenticator(
         refreshFailed = true
         Timber.w("Token refresh failed — circuit breaker tripped")
         runBlocking { dataStoreManager.clearSession() }
+        SettingsViewModel.clearCache()
         _sessionExpired.tryEmit(Unit)
     }
 

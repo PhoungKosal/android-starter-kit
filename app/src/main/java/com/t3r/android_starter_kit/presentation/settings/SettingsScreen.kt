@@ -17,6 +17,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.outlined.Language
+import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Palette
 import androidx.compose.material.icons.outlined.Security
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -27,6 +28,7 @@ import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -147,6 +149,41 @@ fun SettingsScreen(
                         leadingContent = { Icon(Icons.Outlined.Language, contentDescription = null) },
                         modifier = Modifier.clickable {
                             viewModel.onEvent(SettingsEvent.ShowLanguagePicker)
+                        },
+                    )
+
+                    HorizontalDivider()
+
+                    Text(
+                        text = stringResource(R.string.settings_notifications),
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                    )
+
+                    ListItem(
+                        headlineContent = { Text(stringResource(R.string.settings_email_notifications)) },
+                        supportingContent = { Text(stringResource(R.string.settings_email_notifications_desc)) },
+                        leadingContent = { Icon(Icons.Outlined.Notifications, contentDescription = null) },
+                        trailingContent = {
+                            Switch(
+                                checked = state.emailNotifications,
+                                onCheckedChange = { viewModel.onEvent(SettingsEvent.ToggleEmailNotifications(it)) },
+                                enabled = !state.isSaving,
+                            )
+                        },
+                    )
+
+                    ListItem(
+                        headlineContent = { Text(stringResource(R.string.settings_push_notifications)) },
+                        supportingContent = { Text(stringResource(R.string.settings_push_notifications_desc)) },
+                        leadingContent = { Icon(Icons.Outlined.Notifications, contentDescription = null) },
+                        trailingContent = {
+                            Switch(
+                                checked = state.pushNotifications,
+                                onCheckedChange = { viewModel.onEvent(SettingsEvent.TogglePushNotifications(it)) },
+                                enabled = !state.isSaving,
+                            )
                         },
                     )
                 }

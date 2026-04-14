@@ -111,6 +111,11 @@
     <string name="settings_preferences">ចំណូលចិត្ត</string>
     <string name="settings_theme">រចនាប័ទ្ម</string>
     <string name="settings_language">ភាសា</string>
+    <string name="settings_notifications">ការជូនដំណឹង</string>
+    <string name="settings_email_notifications">អ៊ីមែល</string>
+    <string name="settings_email_notifications_desc">ទទួលការជូនដំណឹងមិនសំខាន់តាមអ៊ីមែល។ អ៊ីមែលសុវត្ថិភាពត្រូវបានផ្ញើជានិច្ច។</string>
+    <string name="settings_push_notifications">ការជូនដំណឹងផុស</string>
+    <string name="settings_push_notifications_desc">ទទួលការជូនដំណឹងផុសនៅលើឧបករណ៍នេះ។</string>
 
     <!-- Settings - Two Factor -->
     <string name="two_factor_settings_title">ការផ្ទៀងផ្ទាត់ពីរកត្តា</string>
@@ -142,7 +147,6 @@
     <!-- Theme -->
     <string name="settings_theme_light">ភ្លឺ</string>
     <string name="settings_theme_dark">ងងឹត</string>
-    <string name="settings_theme_system">ប្រព័ន្ធ</string>
     <string name="theme_label">រចនាប័ទ្ម</string>
 
     <!-- Language Switcher -->

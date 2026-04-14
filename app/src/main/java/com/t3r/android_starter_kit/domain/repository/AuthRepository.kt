@@ -6,6 +6,7 @@ import com.t3r.android_starter_kit.domain.model.LoginResult
 import com.t3r.android_starter_kit.domain.model.RegisterResult
 import com.t3r.android_starter_kit.domain.model.TwoFactorSetup
 import com.t3r.android_starter_kit.domain.model.User
+import com.t3r.android_starter_kit.domain.model.UserSettings
 
 interface AuthRepository {
 
@@ -54,8 +55,16 @@ interface AuthRepository {
 
     suspend fun disable2fa(password: String, code: String): Result<String>
 
+    suspend fun getMySettings(): Result<UserSettings>
+
     suspend fun updateMySettings(
         language: String? = null,
         theme: String? = null,
-    ): Result<Unit>
+        timezone: String? = null,
+        dateFormat: String? = null,
+        primaryColor: String? = null,
+        neutralColor: String? = null,
+        emailNotifications: Boolean? = null,
+        pushNotifications: Boolean? = null,
+    ): Result<UserSettings>
 }

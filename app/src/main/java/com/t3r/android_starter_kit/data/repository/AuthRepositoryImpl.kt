@@ -31,6 +31,7 @@ import com.t3r.android_starter_kit.domain.model.LoginResult
 import com.t3r.android_starter_kit.domain.model.RegisterResult
 import com.t3r.android_starter_kit.domain.model.TwoFactorSetup
 import com.t3r.android_starter_kit.domain.model.User
+import com.t3r.android_starter_kit.domain.model.UserSettings
 import com.t3r.android_starter_kit.domain.repository.AuthRepository
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -229,12 +230,31 @@ class AuthRepositoryImpl @Inject constructor(
         accountApi.disable2fa(Disable2faRequestDto(password, code))
     }.map { it.message }
 
+    override suspend fun getMySettings(): Result<UserSettings> = safeApiCall {
+        usersApi.getMySettings()
+    }.map { it.toDomain() }
+
     override suspend fun updateMySettings(
         language: String?,
         theme: String?,
-    ): Result<Unit> = safeApiCall {
+        timezone: String?,
+        dateFormat: String?,
+        primaryColor: String?,
+        neutralColor: String?,
+        emailNotifications: Boolean?,
+        pushNotifications: Boolean?,
+    ): Result<UserSettings> = safeApiCall {
         usersApi.updateMySettings(
-            request = UpdateUserSettingsRequestDto(language = language, theme = theme),
+            request = UpdateUserSettingsRequestDto(
+                language = language,
+                theme = theme,
+                timezone = timezone,
+                dateFormat = dateFormat,
+                primaryColor = primaryColor,
+                neutralColor = neutralColor,
+                emailNotifications = emailNotifications,
+                pushNotifications = pushNotifications,
+            ),
         )
-    }.map { }
+    }.map { it.toDomain() }
 }

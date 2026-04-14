@@ -4,6 +4,7 @@ import com.t3r.android_starter_kit.data.remote.dto.auth.PermissionDto
 import com.t3r.android_starter_kit.data.remote.dto.auth.RoleDto
 import com.t3r.android_starter_kit.data.remote.dto.auth.RuleDto
 import com.t3r.android_starter_kit.data.remote.dto.auth.UserDto
+import com.t3r.android_starter_kit.data.remote.dto.auth.UserSettingsDto
 import com.t3r.android_starter_kit.data.remote.dto.auth.Enable2faResponseDto
 import com.t3r.android_starter_kit.data.remote.dto.auth.Setup2faResponseDto
 import com.t3r.android_starter_kit.data.remote.dto.files.FileDto
@@ -18,6 +19,7 @@ import com.t3r.android_starter_kit.domain.model.Permission
 import com.t3r.android_starter_kit.domain.model.Role
 import com.t3r.android_starter_kit.domain.model.UploadUrl
 import com.t3r.android_starter_kit.domain.model.User
+import com.t3r.android_starter_kit.domain.model.UserSettings
 
 // -- User mapping --
 
@@ -39,6 +41,17 @@ fun UserDto.toDomain(): User = User(
     theme = settings?.theme,
     notificationsEnabled = settings?.emailNotifications ?: true,
     createdAt = createdAt,
+)
+
+fun UserSettingsDto.toDomain(): UserSettings = UserSettings(
+    theme = theme ?: "light",
+    language = language ?: "en",
+    timezone = timezone ?: "UTC",
+    dateFormat = dateFormat ?: "MM/DD/YYYY",
+    primaryColor = primaryColor ?: "blue",
+    neutralColor = neutralColor ?: "slate",
+    emailNotifications = emailNotifications,
+    pushNotifications = pushNotifications,
 )
 
 fun RoleDto.toDomain(): Role = Role(

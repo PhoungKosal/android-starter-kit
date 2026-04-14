@@ -88,10 +88,11 @@ class HomeViewModel @Inject constructor(
                         dataStoreManager.saveLanguage(serverLocale.tag)
                     }
                     // Sync theme
-                    val localTheme = dataStoreManager.theme.first()
+                    val localTheme = dataStoreManager.activeTheme.value
                     if (localTheme != "system") {
                         val serverTheme = user.theme ?: localTheme
-                        dataStoreManager.saveTheme(serverTheme)
+                        dataStoreManager.persistTheme(serverTheme)
+                        dataStoreManager.applyTheme(serverTheme)
                     }
                     _state.update { it.copy(user = user, isLoading = false, error = null) }
                 }

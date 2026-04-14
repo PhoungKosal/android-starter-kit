@@ -11,6 +11,7 @@ import com.t3r.android_starter_kit.core.result.onError
 import com.t3r.android_starter_kit.core.result.onSuccess
 import com.t3r.android_starter_kit.domain.repository.AuthRepository
 import com.t3r.android_starter_kit.domain.repository.FilesRepository
+import com.t3r.android_starter_kit.presentation.settings.SettingsViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
@@ -116,6 +117,7 @@ class ProfileViewModel @Inject constructor(
             _state.update { it.copy(isDeleting = true) }
             authRepository.deleteAccount(password)
                 .onSuccess {
+                    SettingsViewModel.clearCache()
                     _state.update { it.copy(isDeleting = false, showDeleteDialog = false, accountDeleted = true) }
                     _navigation.emit(ProfileNavigationEvent.AccountDeleted)
                 }
@@ -129,6 +131,7 @@ class ProfileViewModel @Inject constructor(
         viewModelScope.launch {
             _state.update { it.copy(isLoggingOut = true) }
             authRepository.logout()
+            SettingsViewModel.clearCache()
             _state.update { it.copy(isLoggingOut = false, loggedOut = true) }
         }
     }

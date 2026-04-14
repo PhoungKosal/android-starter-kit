@@ -111,6 +111,11 @@
     <string name="settings_preferences">偏好设置</string>
     <string name="settings_theme">主题</string>
     <string name="settings_language">语言</string>
+    <string name="settings_notifications">通知</string>
+    <string name="settings_email_notifications">电子邮件</string>
+    <string name="settings_email_notifications_desc">通过电子邮件接收非必要通知。安全邮件始终会发送。</string>
+    <string name="settings_push_notifications">推送</string>
+    <string name="settings_push_notifications_desc">在此设备上接收推送通知。</string>
 
     <!-- Settings - Two Factor -->
     <string name="two_factor_settings_title">双因素认证</string>
@@ -142,7 +147,6 @@
     <!-- Theme -->
     <string name="settings_theme_light">浅色</string>
     <string name="settings_theme_dark">深色</string>
-    <string name="settings_theme_system">系统</string>
     <string name="theme_label">主题</string>
 
     <!-- Language Switcher -->

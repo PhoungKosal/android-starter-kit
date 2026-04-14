@@ -11,6 +11,10 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 
 private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "starter_prefs")
@@ -19,6 +23,11 @@ private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(na
  * Manages local persistent storage using Jetpack DataStore.
  * Stores user preferences and session flags. Auth tokens are delegated
  * to [SecureTokenStore] (EncryptedSharedPreferences) for at-rest encryption.
+ *
+ * Theme is exposed via an in-memory [StateFlow] ([activeTheme]) rather than
+ * the raw DataStore Preferences Flow. This avoids the asynchronous
+ * DataStore-write → Preferences-emission → root-recomposition cascade that
+ * can destroy Nav3 entry ViewModelStores in alpha builds.
  */
 @Singleton
 class DataStoreManager @Inject constructor(
@@ -69,10 +78,44 @@ class DataStoreManager @Inject constructor(
 
     // -- Preferences --
 
-    val theme: Flow<String> = context.dataStore.data.map { it[Keys.THEME] ?: "system" }
+    /**
+     * In-memory theme state. [MainActivity] should observe this instead of the
+     * raw DataStore flow so that theme switches happen synchronously and don't
+     * trigger the DataStore write → Preferences emission → deep-recomposition
+     * cascade that can destroy Nav3 entry ViewModels.
+     *
+     * Initialised to "light"; the real value is set by [initActiveTheme].
+     */
+    private val _activeTheme = MutableStateFlow("light")
+    val activeTheme: StateFlow<String> = _activeTheme.asStateFlow()
+
+    /**
+     * Read the persisted theme from DataStore and seed [activeTheme].
+     * Call once during [MainActivity.onCreate] (before setContent).
+     */
+    suspend fun initActiveTheme() {
+        val stored = context.dataStore.data.first()[Keys.THEME] ?: "light"
+        _activeTheme.value = stored
+    }
+
     val language: Flow<String> = context.dataStore.data.map { it[Keys.LANGUAGE] ?: "en" }
 
-    suspend fun saveTheme(theme: String) {
+    /**
+     * Update only the in-memory [activeTheme] StateFlow.
+     * Triggers MaterialTheme recomposition but does NOT write to DataStore.
+     * Use this as the **last** step in a settings-update flow so that the
+     * companion-object cache is already populated before Nav3 recomposition
+     * can recreate a ViewModel.
+     */
+    fun applyTheme(theme: String) {
+        _activeTheme.value = theme
+    }
+
+    /**
+     * Persist theme to DataStore on disk without updating [activeTheme].
+     * Use when you need disk persistence without triggering recomposition.
+     */
+    suspend fun persistTheme(theme: String) {
         context.dataStore.edit { it[Keys.THEME] = theme }
     }
 

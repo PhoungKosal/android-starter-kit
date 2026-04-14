@@ -9,12 +9,12 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.core.content.ContextCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import com.google.firebase.messaging.FirebaseMessaging
 import com.t3r.android_starter_kit.data.local.DataStoreManager
@@ -119,8 +119,14 @@ class MainActivity : AppCompatActivity() {
         requestNotificationPermission()
         enableEdgeToEdge()
 
+        // Seed the in-memory activeTheme from DataStore before setContent
+        // so the first frame uses the persisted theme (avoids a light → dark flash).
+        lifecycleScope.launch {
+            dataStoreManager.initActiveTheme()
+        }
+
         setContent {
-            val themeMode by dataStoreManager.theme.collectAsState(initial = "system")
+            val themeMode by dataStoreManager.activeTheme.collectAsStateWithLifecycle()
 
             AndroidstarterkitTheme(themeMode = themeMode) {
                 if (isReady) {

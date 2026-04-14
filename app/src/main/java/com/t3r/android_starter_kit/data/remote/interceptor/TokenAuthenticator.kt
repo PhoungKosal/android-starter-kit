@@ -93,11 +93,7 @@ class TokenAuthenticator(
 
                 refreshResponse.use { res ->
                     if (res.isSuccessful) {
-                        val responseBody = res.body?.string()
-                        if (responseBody == null) {
-                            onRefreshFailed()
-                            return null
-                        }
+                        val responseBody = res.body.string()
                         val tokens = json.decodeFromString<RefreshTokenResponseDto>(responseBody)
                         runBlocking { dataStoreManager.saveTokens(tokens.accessToken, tokens.refreshToken) }
 

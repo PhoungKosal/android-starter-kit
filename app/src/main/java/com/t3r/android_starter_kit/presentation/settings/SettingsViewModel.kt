@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -27,9 +28,9 @@ import javax.inject.Inject
  * WRITE → PATCH /users/settings → re-fetch full settings (invalidateQueries)
  *
  * Theme is applied via [DataStoreManager.applyTheme] (in-memory StateFlow)
- * which [MainActivity] observes. The visual theme change is always the **last**
+ * which MainActivity observes. The visual theme change is always the **last**
  * operation after all API + DataStore work completes. This ensures the
- * companion-object [cache] is populated before Nav3 recomposition can recreate
+ * companion-object cache is populated before Nav3 recomposition can recreate
  * this ViewModel — so the user never sees a loading spinner after a theme change.
  */
 @HiltViewModel
@@ -42,8 +43,8 @@ class SettingsViewModel @Inject constructor(
         /**
          * In-memory cache shared across ViewModel instances. When a theme
          * change triggers MaterialTheme recomposition and Nav3 (alpha)
-         * recreates this ViewModel, [init] reads from the cache so the
-         * user never sees a loading spinner.
+         * recreates this ViewModel, the init block reads from the cache
+         * so the user never sees a loading spinner.
          */
         @Volatile
         private var cachedUser: User? = null
@@ -231,8 +232,8 @@ class SettingsViewModel @Inject constructor(
     /**
      * Change language — PATCH then re-fetch.
      *
-     * Uses [NonCancellable] so the operation completes even if the Activity
-     * is recreated by [LocaleManager.setLocale] (config change).
+     * Wraps work in `withContext(NonCancellable)` so the operation completes
+     * even if the Activity is recreated by locale config change.
      */
     private fun changeLocale(locale: LocaleManager.AppLocale) {
         if (_state.value.isSaving) return
@@ -245,17 +246,19 @@ class SettingsViewModel @Inject constructor(
             )
         }
 
-        settingsJob = viewModelScope.launch(NonCancellable) {
-            authRepository.updateMySettings(language = locale.tag)
-                .onSuccess { refreshSettings() }
-                .onError { error ->
-                    Timber.w("Failed to sync language to server: ${error.message}")
-                    val previous = _state.value.settings?.language
-                    val revertLocale = LocaleManager.AppLocale.fromTag(previous)
-                    _state.update {
-                        it.copy(currentLocale = revertLocale, isSaving = false)
+        settingsJob = viewModelScope.launch {
+            withContext(NonCancellable) {
+                authRepository.updateMySettings(language = locale.tag)
+                    .onSuccess { refreshSettings() }
+                    .onError { error ->
+                        Timber.w("Failed to sync language to server: ${error.message}")
+                        val previous = _state.value.settings?.language
+                        val revertLocale = LocaleManager.AppLocale.fromTag(previous)
+                        _state.update {
+                            it.copy(currentLocale = revertLocale, isSaving = false)
+                        }
                     }
-                }
+            }
         }
     }
 
@@ -266,10 +269,10 @@ class SettingsViewModel @Inject constructor(
      * last step, **after** the companion-object cache has been populated by
      * [refreshSettings]. If the resulting MaterialTheme recomposition causes
      * Nav3 to recreate this ViewModel, the new instance reads the cache in
-     * [init] and displays data immediately — no loading spinner.
+     * the init block and displays data immediately — no loading spinner.
      *
-     * Uses [NonCancellable] so the operation completes even if the ViewModel
-     * is destroyed mid-flight by the theme recomposition.
+     * Wraps work in `withContext(NonCancellable)` so the operation completes
+     * even if the ViewModel is destroyed mid-flight by the theme recomposition.
      */
     private fun changeTheme(theme: AppTheme) {
         if (_state.value.isSaving) return
@@ -282,25 +285,27 @@ class SettingsViewModel @Inject constructor(
             )
         }
 
-        settingsJob = viewModelScope.launch(NonCancellable) {
-            authRepository.updateMySettings(theme = theme.value)
-                .onSuccess {
-                    // 1. Re-fetch + cache + persist (no visual recomp yet).
-                    refreshSettings()
-                    // 2. Apply theme — triggers MaterialTheme recomposition.
-                    //    All API work is done; cache is populated.
-                    dataStoreManager.applyTheme(theme.value)
-                }
-                .onError { error ->
-                    Timber.w("Failed to sync theme to server: ${error.message}")
-                    val previousTheme = _state.value.settings?.theme ?: "light"
-                    _state.update {
-                        it.copy(
-                            currentTheme = AppTheme.fromString(previousTheme),
-                            isSaving = false,
-                        )
+        settingsJob = viewModelScope.launch {
+            withContext(NonCancellable) {
+                authRepository.updateMySettings(theme = theme.value)
+                    .onSuccess {
+                        // 1. Re-fetch + cache + persist (no visual recomp yet).
+                        refreshSettings()
+                        // 2. Apply theme — triggers MaterialTheme recomposition.
+                        //    All API work is done; cache is populated.
+                        dataStoreManager.applyTheme(theme.value)
                     }
-                }
+                    .onError { error ->
+                        Timber.w("Failed to sync theme to server: ${error.message}")
+                        val previousTheme = _state.value.settings?.theme ?: "light"
+                        _state.update {
+                            it.copy(
+                                currentTheme = AppTheme.fromString(previousTheme),
+                                isSaving = false,
+                            )
+                        }
+                    }
+            }
         }
     }
 
@@ -314,13 +319,15 @@ class SettingsViewModel @Inject constructor(
         val previous = _state.value.emailNotifications
         _state.update { it.copy(emailNotifications = enabled, isSaving = true) }
 
-        settingsJob = viewModelScope.launch(NonCancellable) {
-            authRepository.updateMySettings(emailNotifications = enabled)
-                .onSuccess { refreshSettings() }
-                .onError { error ->
-                    Timber.w("Failed to toggle email notifications: ${error.message}")
-                    _state.update { it.copy(emailNotifications = previous, isSaving = false) }
-                }
+        settingsJob = viewModelScope.launch {
+            withContext(NonCancellable) {
+                authRepository.updateMySettings(emailNotifications = enabled)
+                    .onSuccess { refreshSettings() }
+                    .onError { error ->
+                        Timber.w("Failed to toggle email notifications: ${error.message}")
+                        _state.update { it.copy(emailNotifications = previous, isSaving = false) }
+                    }
+            }
         }
     }
 
@@ -333,13 +340,15 @@ class SettingsViewModel @Inject constructor(
         val previous = _state.value.pushNotifications
         _state.update { it.copy(pushNotifications = enabled, isSaving = true) }
 
-        settingsJob = viewModelScope.launch(NonCancellable) {
-            authRepository.updateMySettings(pushNotifications = enabled)
-                .onSuccess { refreshSettings() }
-                .onError { error ->
-                    Timber.w("Failed to toggle push notifications: ${error.message}")
-                    _state.update { it.copy(pushNotifications = previous, isSaving = false) }
-                }
+        settingsJob = viewModelScope.launch {
+            withContext(NonCancellable) {
+                authRepository.updateMySettings(pushNotifications = enabled)
+                    .onSuccess { refreshSettings() }
+                    .onError { error ->
+                        Timber.w("Failed to toggle push notifications: ${error.message}")
+                        _state.update { it.copy(pushNotifications = previous, isSaving = false) }
+                    }
+            }
         }
     }
 }

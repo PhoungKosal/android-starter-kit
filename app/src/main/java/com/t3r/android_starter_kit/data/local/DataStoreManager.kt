@@ -31,7 +31,7 @@ private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(na
  */
 @Singleton
 class DataStoreManager @Inject constructor(
-    @ApplicationContext private val context: Context,
+    @param:ApplicationContext private val context: Context,
     private val secureTokenStore: SecureTokenStore,
 ) {
     private object Keys {
@@ -44,9 +44,7 @@ class DataStoreManager @Inject constructor(
 
     // -- Auth Tokens (encrypted via SecureTokenStore) --
     // Use getAccessToken()/getRefreshToken() for synchronous reads in interceptors.
-    // These flows re-emit when DataStore prefs change (e.g. after saveTokens/clearSession).
 
-    val accessToken: Flow<String?> = context.dataStore.data.map { secureTokenStore.accessToken }
     val refreshToken: Flow<String?> = context.dataStore.data.map { secureTokenStore.refreshToken }
 
     /** Synchronous token access for interceptors — avoids runBlocking on a Flow. */
@@ -54,7 +52,6 @@ class DataStoreManager @Inject constructor(
     fun getRefreshToken(): String? = secureTokenStore.refreshToken
 
     val isLoggedIn: Flow<Boolean> = context.dataStore.data.map { it[Keys.IS_LOGGED_IN] ?: false }
-    val userId: Flow<String?> = context.dataStore.data.map { it[Keys.USER_ID] }
 
     suspend fun saveTokens(accessToken: String, refreshToken: String) {
         secureTokenStore.accessToken = accessToken
@@ -79,7 +76,7 @@ class DataStoreManager @Inject constructor(
     // -- Preferences --
 
     /**
-     * In-memory theme state. [MainActivity] should observe this instead of the
+     * In-memory theme state. MainActivity should observe this instead of the
      * raw DataStore flow so that theme switches happen synchronously and don't
      * trigger the DataStore write → Preferences emission → deep-recomposition
      * cascade that can destroy Nav3 entry ViewModels.
@@ -91,7 +88,7 @@ class DataStoreManager @Inject constructor(
 
     /**
      * Read the persisted theme from DataStore and seed [activeTheme].
-     * Call once during [MainActivity.onCreate] (before setContent).
+     * Call once during `MainActivity.onCreate` (before `setContent`).
      */
     suspend fun initActiveTheme() {
         val stored = context.dataStore.data.first()[Keys.THEME] ?: "light"
